@@ -1,0 +1,38 @@
+# encoding: utf-8
+
+require "mkmf"
+
+if ENV["CC"]
+  RbConfig::MAKEFILE_CONFIG["CC"] = ENV["CC"]
+end
+
+def config_value(type)
+  IO.popen("pg_config --#{type}").readline.chomp rescue nil
+end
+
+def have_build_env
+  [
+    have_library("pq") || have_library("libpq"),
+    have_header("libpq-fe.h"),
+    have_header("postgres.h")
+  ].all?
+end
+
+dir_config(
+  "pgsql-server",
+  config_value("includedir-server"),
+  config_value("libdir")
+)
+
+dir_config(
+  "pgsql-client",
+  config_value("includedir"),
+  config_value("libdir")
+)
+
+unless have_build_env
+  puts "Unable to find postgresql libraries and headers. Not building."
+  exit(1)
+end
+
+create_makefile("rdo_postgres/rdo_postgres")
