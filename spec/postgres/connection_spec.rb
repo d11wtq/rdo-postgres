@@ -66,4 +66,16 @@ describe RDO::Postgres::Connection do
       end
     end
   end
+
+  describe "#execute" do
+    after(:each) { connection.execute("DROP SCHEMA IF EXISTS rdo_test") }
+
+    context "with DDL" do
+      let(:result) { connection.execute("CREATE SCHEMA rdo_test") }
+
+      it "returns a RDO::Result" do
+        result.should be_a_kind_of(RDO::Result)
+      end
+    end
+  end
 end

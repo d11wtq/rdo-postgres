@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 ##
 # RDO PostgreSQL driver.
 # Copyright © 2012 Chris Corbyn.
@@ -11,7 +9,7 @@ module RDO
   module Postgres
     # Connection to the Postgres server.
     #
-    # Almost all default behaviour is overloaded.
+    # All default behaviour is overloaded.
     class Connection < RDO::Connection
       # implementation defined by C extension
 

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 ##
 # RDO PostgreSQL driver.
 # Copyright © 2012 Chris Corbyn.

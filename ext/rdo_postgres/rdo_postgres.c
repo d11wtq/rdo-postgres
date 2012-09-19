@@ -1,18 +1,28 @@
+/*
+ * RDO Postgres Driver.
+ * Copyright © 2012 Chris Corbyn.
+ *
+ * See LICENSE file for details.
+ */
+
 #include <stdio.h>
 #include <ruby.h>
 #include <postgres.h>
 #include <libpq-fe.h>
 
+/** RDO::Postgres::Connect wraps this struct */
 typedef struct {
   PGconn * ptr;
   int      is_open;
 } RDOPostgres;
 
+/** During GC, free any stranded connection */
 void rdo_postgres_connection_free(RDOPostgres * conn) {
   PQfinish(conn->ptr);
   free(conn);
 }
 
+/** Allocate memory for the connection struct */
 static VALUE rdo_postgres_connection_allocate(VALUE klass) {
   RDOPostgres * conn = malloc(sizeof(RDOPostgres));
 
@@ -25,6 +35,7 @@ static VALUE rdo_postgres_connection_allocate(VALUE klass) {
   return self;
 }
 
+/** Connect to the postgres server */
 static VALUE rdo_postgres_connection_open(VALUE self) {
   RDOPostgres * conn;
   Data_Get_Struct(self, RDOPostgres, conn);
@@ -42,7 +53,8 @@ static VALUE rdo_postgres_connection_open(VALUE self) {
         PQerrorMessage(conn->ptr));
   } else if (PQprotocolVersion(conn->ptr) < 3) {
     rb_raise(rb_path2class("RDO::Exception"),
-        "rdo-postgres requires PostgreSQL protocol version >= 3 (using %u)",
+        "rdo-postgres requires PostgreSQL protocol version >= 3 (using %u). "
+        "PostgreSQL >= 7.4 required.",
         PQprotocolVersion(conn->ptr));
   } else {
     conn->is_open = 1;
@@ -51,6 +63,7 @@ static VALUE rdo_postgres_connection_open(VALUE self) {
   return Qtrue;
 }
 
+/** Disconnect from the postgres server, and release memory */
 static VALUE rdo_postgres_connection_close(VALUE self) {
   RDOPostgres * conn;
   Data_Get_Struct(self, RDOPostgres, conn);
@@ -62,12 +75,38 @@ static VALUE rdo_postgres_connection_close(VALUE self) {
   return Qtrue;
 }
 
+/** Preciate test if connection is open */
 static VALUE rdo_postgres_connection_open_p(VALUE self) {
   RDOPostgres * conn;
   Data_Get_Struct(self, RDOPostgres, conn);
   return conn->is_open ? Qtrue : Qfalse;
 }
 
+/** Execute a statement, with optional bind parameters */
+static VALUE rdo_postgres_connection_execute(int argc, VALUE * args, VALUE self) {
+  if (argc < 1) {
+    rb_raise(rb_eArgError, "Wrong number of arguments (%d for 1)", argc);
+  }
+
+  RDOPostgres * conn;
+  Data_Get_Struct(self, RDOPostgres, conn);
+
+  if (!(conn->is_open)) {
+    rb_raise(rb_path2class("RDO::Exception"),
+        "Unable to execute query: connection is not open");
+  }
+
+  Check_Type(args[0], T_STRING);
+
+  PGresult * res = PQexec(conn->ptr, RSTRING_PTR(args[0]));
+  PQclear(res);
+
+  return rb_funcall(rb_path2class("RDO::Result"), rb_intern("new"), 0);
+}
+
+/**
+ * Extension initializer.
+ */
 void Init_rdo_postgres(void) {
   rb_require("rdo/postgres/connection");
 
@@ -88,4 +127,8 @@ void Init_rdo_postgres(void) {
   rb_define_method(
       cPostgresConnection,
       "open?", rdo_postgres_connection_open_p, 0);
+
+  rb_define_method(
+      cPostgresConnection,
+      "execute", rdo_postgres_connection_execute, -1);
 }
