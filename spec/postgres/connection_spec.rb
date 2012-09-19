@@ -1,23 +1,67 @@
 require "spec_helper"
 
 describe RDO::Postgres::Connection do
+  let(:options) { "postgresql://flippa:flippa@192.168.27.1/flippa" }
+  let(:connection) { RDO.connect(options) }
+
   describe "#initialize" do
-    let(:options)    { Hash[] }
-    let(:connection) { RDO.connect(options) }
-
     context "with valid settings" do
-      let(:options) { "postgresql://flippa:flippa@192.168.27.1/flippa" }
-
       it "opens a connection to the server" do
         connection.should be_open
       end
     end
 
     context "with invalid settings" do
-      let(:options) { "postgresql://baduser:badpass@localhost/bad_dbname" }
+      let(:options) { "postgresql://bad_user:password@192.168.27.1/flippa" }
 
       it "raises a RDO::Exception" do
         expect { connection }.to raise_error(RDO::Exception)
+      end
+
+      it "provides a meaningful error message" do
+        begin
+          connection && fail("RDO::Exception should be raised")
+        rescue RDO::Exception => e
+          e.message.should =~ /(?i)postgres(?-i).*\bbad_user\b/
+        end
+      end
+    end
+  end
+
+  describe "#close" do
+    it "closes the connection to the database" do
+      connection.close
+      connection.should_not be_open
+    end
+
+    it "returns true" do
+      connection.close.should be_true
+    end
+
+    context "called multiple times" do
+      it "has no negative side-effects" do
+        5.times { connection.close }
+        connection.should_not be_open
+      end
+    end
+  end
+
+  describe "#open" do
+    it "re-opens the connection to the database" do
+      connection.close && connection.open
+      connection.should be_open
+    end
+
+    it "returns true" do
+      connection.close
+      connection.open.should be_true
+    end
+
+    context "called multiple times" do
+      it "has no negative side-effects" do
+        connection.close
+        5.times { connection.open }
+        connection.should be_open
       end
     end
   end
