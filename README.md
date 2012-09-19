@@ -2,7 +2,22 @@
 
 This is the PostgreSQL driver for [RDO—Ruby Data Objects](https://github.com/d11wtq/rdo).
 
-Refer to the RDO project README for installation usage information.
+Refer to the RDO project [README](https://github.com/d11wtq/rdo) for usage
+information.
+
+## Installation
+
+Via rubygems:
+
+    $ gem install rdo-postgres
+
+Or add the following line to your application's Gemfile:
+
+    gem "rdo-postgres"
+
+And install with Bundler:
+
+    $ bundle install
 
 ## Contributing
 
