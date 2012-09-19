@@ -20,11 +20,13 @@ module RDO
       # e.g. "host=localhost user=bob password=secret dbname=bobs_db"
       def connect_db_string
         {
-          host:     options[:host],
-          port:     options[:port],
-          dbname:   options[:database],
-          user:     options[:user],
-          password: options[:password]
+          host:            options[:host],
+          port:            options[:port],
+          dbname:          options[:database],
+          user:            options[:user],
+          password:        options[:password],
+          client_encoding: options[:encoding],
+          connect_timeout: options[:connect_timeout]
         }.reject{|k,v| v.nil?}.map{|pair| pair.join("=")}.join(" ")
       end
     end

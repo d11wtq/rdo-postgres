@@ -23,7 +23,7 @@ describe RDO::Postgres::Connection do
         begin
           connection && fail("RDO::Exception should be raised")
         rescue RDO::Exception => e
-          e.message.should =~ /(?i)postgres(?-i).*\bbad_user\b/
+          e.message.should =~ /\bbad_user\b/
         end
       end
     end
@@ -75,6 +75,22 @@ describe RDO::Postgres::Connection do
 
       it "returns a RDO::Result" do
         result.should be_a_kind_of(RDO::Result)
+      end
+    end
+
+    context "with a bad query" do
+      let(:command) { connection.execute("SOME GIBBERISH") }
+
+      it "raises a RDO::Exception" do
+        expect { command }.to raise_error(RDO::Exception)
+      end
+
+      it "provides a meaningful error message" do
+        begin
+          command && fail("RDO::Exception should be raised")
+        rescue RDO::Exception => e
+          e.message.should =~ /\bSOME\b/
+        end
       end
     end
   end

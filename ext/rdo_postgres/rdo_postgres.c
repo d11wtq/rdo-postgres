@@ -22,6 +22,11 @@ void rdo_postgres_connection_free(RDOPostgres * conn) {
   free(conn);
 }
 
+/** Postgres outputs notices (e.g. auto-generating sequence...) unless overridden */
+void rdo_postgres_connection_notice_processor(void * arg, const char * msg) {
+  // silence
+}
+
 /** Allocate memory for the connection struct */
 static VALUE rdo_postgres_connection_allocate(VALUE klass) {
   RDOPostgres * conn = malloc(sizeof(RDOPostgres));
@@ -57,6 +62,8 @@ static VALUE rdo_postgres_connection_open(VALUE self) {
         "PostgreSQL >= 7.4 required.",
         PQprotocolVersion(conn->ptr));
   } else {
+    PQsetNoticeProcessor(
+        conn->ptr, &rdo_postgres_connection_notice_processor, NULL);
     conn->is_open = 1;
   }
 
@@ -98,7 +105,14 @@ static VALUE rdo_postgres_connection_execute(int argc, VALUE * args, VALUE self)
 
   Check_Type(args[0], T_STRING);
 
-  PGresult * res = PQexec(conn->ptr, RSTRING_PTR(args[0]));
+  PGresult       * res    = PQexec(conn->ptr, RSTRING_PTR(args[0]));
+  ExecStatusType   status = PQresultStatus(res);
+
+  if (status == PGRES_BAD_RESPONSE || status == PGRES_FATAL_ERROR) {
+    rb_raise(rb_path2class("RDO::Exception"),
+        "Failed to execute query: %s", PQresultErrorMessage(res));
+  }
+
   PQclear(res);
 
   return rb_funcall(rb_path2class("RDO::Result"), rb_intern("new"), 0);
