@@ -1,7 +1,8 @@
 require "spec_helper"
+require "uri"
 
 describe RDO::Postgres::Connection do
-  let(:options) { "postgresql://flippa:flippa@192.168.27.1/flippa" }
+  let(:options)    { connection_uri }
   let(:connection) { RDO.connect(options) }
 
   describe "#initialize" do
@@ -12,7 +13,7 @@ describe RDO::Postgres::Connection do
     end
 
     context "with invalid settings" do
-      let(:options) { "postgresql://bad_user:password@192.168.27.1/flippa" }
+      let(:options) { URI.parse(connection_uri).tap{|u| u.user = "bad_user"}.to_s }
 
       it "raises a RDO::Exception" do
         expect { connection }.to raise_error(RDO::Exception)
