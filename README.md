@@ -1,29 +1,22 @@
-# Rdo::Postgres
+# RDO PostgreSQL Driver
 
-TODO: Write a gem description
+This is the PostgreSQL driver for [RDO—Ruby Data Objects](https://github.com/d11wtq/rdo).
 
-## Installation
-
-Add this line to your application's Gemfile:
-
-    gem 'rdo-postgres'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install rdo-postgres
-
-## Usage
-
-TODO: Write usage instructions here
+Refer to the RDO project README for installation usage information.
 
 ## Contributing
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+If you find any bugs, please send a pull request if you think you can
+fix it, or file in an issue in the issue tracker.
+
+When sending pull requests, please use topic branches—don't send a pull
+request from the master branch of your fork, as that may change
+unintentionally.
+
+Contributors will be credited in this README.
+
+## Copyright & Licensing
+
+Written by Chris Corbyn.
+
+Licensed under the MIT license. See the LICENSE file for full details.
