@@ -127,6 +127,20 @@ describe RDO::Postgres::Connection do
           result.insert_id.to_i.should == 1
         end
       end
+
+      context "not RETURNING" do
+        let(:result) do
+          connection.execute("INSERT INTO users (name) VALUES ('bob')")
+        end
+
+        it "returns a RDO::Result" do
+          result.should be_a_kind_of(RDO::Result)
+        end
+
+        it "has a nil insert_id" do
+          result.insert_id.should be_nil
+        end
+      end
     end
   end
 end
