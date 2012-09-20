@@ -19,6 +19,31 @@ And install with Bundler:
 
     $ bundle install
 
+## Usage
+
+The registered URI schemes are postgres:// and postgresql://
+
+``` ruby
+require "rdo"
+require "rdo-postgres"
+
+conn = RDO.connect("postgres://user:pass@localhost/dbname?encoding=utf-8")
+```
+
+Alternatively, give the driver name as "postgres" or "postgresql" in an
+options Hash.
+
+``` ruby
+conn = RDO.connect(
+  driver:    "postgresql",
+  host:      "localhost",
+  user:      "user",
+  passsword: "pass",
+  database:  "dbname",
+  encoding:  "utf-8"
+)
+```
+
 ## Contributing
 
 If you find any bugs, please send a pull request if you think you can
