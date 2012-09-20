@@ -27,6 +27,17 @@ void rdo_postgres_connection_free(RDOPostgres * conn) {
 /** Postgres outputs notices (e.g. auto-generating sequence...) unless overridden */
 void rdo_postgres_connection_notice_processor(void * arg, const char * msg) {}
 
+static VALUE rdo_postgres_result_info_new(PGresult * res) {
+  VALUE info = rb_hash_new();
+  rb_hash_aset(info, ID2SYM(rb_intern("count")), INT2NUM(PQntuples(res)));
+  if (strlen(PQcmdTuples(res)) > 0) {
+    long n;
+    sscanf(PQcmdTuples(res), "%ld", &n);
+    rb_hash_aset(info, ID2SYM(rb_intern("affected_rows")), INT2NUM(n));
+  }
+  return info;
+}
+
 /** Allocate memory for the connection struct */
 static VALUE rdo_postgres_connection_allocate(VALUE klass) {
   RDOPostgres * conn = malloc(sizeof(RDOPostgres));
@@ -62,8 +73,7 @@ static VALUE rdo_postgres_connection_open(VALUE self) {
         "PostgreSQL >= 7.4 required.",
         PQprotocolVersion(conn->ptr));
   } else {
-    PQsetNoticeProcessor(
-        conn->ptr, &rdo_postgres_connection_notice_processor, NULL);
+    PQsetNoticeProcessor(conn->ptr, &rdo_postgres_connection_notice_processor, NULL);
     conn->is_open = 1;
   }
 
@@ -114,9 +124,9 @@ static VALUE rdo_postgres_connection_execute(int argc, VALUE * args, VALUE self)
   }
 
   return rb_funcall(rb_path2class("RDO::Result"),
-      rb_intern("new"),
-      1,
-      rdo_postgres_tuple_list_new(res));
+      rb_intern("new"), 2,
+      rdo_postgres_tuple_list_new(res),
+      rdo_postgres_result_info_new(res));
 }
 
 /**

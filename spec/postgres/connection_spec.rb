@@ -123,8 +123,12 @@ describe RDO::Postgres::Connection do
           result.first[:name].to_s.should == "bob"
         end
 
-        it "provides the insert_id" do
+        it "provides the #insert_id" do
           result.insert_id.to_i.should == 1
+        end
+
+        it "provides the number of #affected_rows" do
+          result.affected_rows.should == 1
         end
       end
 
@@ -137,8 +141,12 @@ describe RDO::Postgres::Connection do
           result.should be_a_kind_of(RDO::Result)
         end
 
-        it "has a nil insert_id" do
+        it "has a nil #insert_id" do
           result.insert_id.should be_nil
+        end
+
+        it "provides the number of #affected_rows" do
+          result.affected_rows.should == 1
         end
       end
     end
