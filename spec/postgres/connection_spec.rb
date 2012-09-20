@@ -68,10 +68,14 @@ describe RDO::Postgres::Connection do
   end
 
   describe "#execute" do
-    after(:each) { connection.execute("DROP SCHEMA IF EXISTS rdo_test") }
+    after(:each) do
+      connection.execute("DROP SCHEMA IF EXISTS rdo_test CASCADE")
+    end
 
     context "with DDL" do
-      let(:result) { connection.execute("CREATE SCHEMA rdo_test") }
+      let(:result) do
+        connection.execute("CREATE SCHEMA rdo_test")
+      end
 
       it "returns a RDO::Result" do
         result.should be_a_kind_of(RDO::Result)
@@ -90,6 +94,37 @@ describe RDO::Postgres::Connection do
           command && fail("RDO::Exception should be raised")
         rescue RDO::Exception => e
           e.message.should =~ /\bSOME\b/
+        end
+      end
+    end
+
+    context "with an INSERT" do
+      before(:each) do
+        connection.execute("CREATE SCHEMA rdo_test")
+        connection.execute("SET search_path = rdo_test")
+        connection.execute(
+          "CREATE TABLE users (id serial primary key, name text)"
+        )
+      end
+
+      context "RETURNING" do
+        let(:result) do
+          connection.execute(
+            "INSERT INTO users (name) VALUES ('bob') RETURNING *"
+          )
+        end
+
+        it "returns a RDO::Result" do
+          result.should be_a_kind_of(RDO::Result)
+        end
+
+        it "provides the return values" do
+          result.first[:id].to_i.should == 1
+          result.first[:name].to_s.should == "bob"
+        end
+
+        it "provides the insert_id" do
+          result.insert_id.to_i.should == 1
         end
       end
     end

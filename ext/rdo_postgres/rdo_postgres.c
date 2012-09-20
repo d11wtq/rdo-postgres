@@ -10,6 +10,8 @@
 #include <postgres.h>
 #include <libpq-fe.h>
 
+#include "tuples.h"
+
 /** RDO::Postgres::Connect wraps this struct */
 typedef struct {
   PGconn * ptr;
@@ -23,9 +25,7 @@ void rdo_postgres_connection_free(RDOPostgres * conn) {
 }
 
 /** Postgres outputs notices (e.g. auto-generating sequence...) unless overridden */
-void rdo_postgres_connection_notice_processor(void * arg, const char * msg) {
-  // silence
-}
+void rdo_postgres_connection_notice_processor(void * arg, const char * msg) {}
 
 /** Allocate memory for the connection struct */
 static VALUE rdo_postgres_connection_allocate(VALUE klass) {
@@ -113,9 +113,10 @@ static VALUE rdo_postgres_connection_execute(int argc, VALUE * args, VALUE self)
         "Failed to execute query: %s", PQresultErrorMessage(res));
   }
 
-  PQclear(res);
-
-  return rb_funcall(rb_path2class("RDO::Result"), rb_intern("new"), 0);
+  return rb_funcall(rb_path2class("RDO::Result"),
+      rb_intern("new"),
+      1,
+      rdo_postgres_tuple_list_new(res));
 }
 
 /**
@@ -145,4 +146,6 @@ void Init_rdo_postgres(void) {
   rb_define_method(
       cPostgresConnection,
       "execute", rdo_postgres_connection_execute, -1);
+
+  Init_rdo_postgres_tuples();
 }
