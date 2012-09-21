@@ -12,28 +12,28 @@
 
 #include "tuples.h"
 
-/** RDO::Postgres::Connect wraps this struct */
+/** RDO::Postgres::Connection wraps this struct */
 typedef struct {
   PGconn * ptr;
   int      is_open;
 } RDOPostgres;
 
 /** During GC, free any stranded connection */
-void rdo_postgres_connection_free(RDOPostgres * conn) {
+static void rdo_postgres_connection_free(RDOPostgres * conn) {
   PQfinish(conn->ptr);
   free(conn);
 }
 
 /** Postgres outputs notices (e.g. auto-generating sequence...) unless overridden */
-void rdo_postgres_connection_notice_processor(void * arg, const char * msg) {}
+static void rdo_postgres_connection_notice_processor(void * arg, const char * msg) {}
 
 static VALUE rdo_postgres_result_info_new(PGresult * res) {
   VALUE info = rb_hash_new();
   rb_hash_aset(info, ID2SYM(rb_intern("count")), INT2NUM(PQntuples(res)));
   if (strlen(PQcmdTuples(res)) > 0) {
-    long n;
-    sscanf(PQcmdTuples(res), "%ld", &n);
-    rb_hash_aset(info, ID2SYM(rb_intern("affected_rows")), INT2NUM(n));
+    rb_hash_aset(info,
+        ID2SYM(rb_intern("affected_rows")),
+        rb_cstr2inum(PQcmdTuples(res), 10));
   }
   return info;
 }

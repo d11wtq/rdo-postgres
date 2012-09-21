@@ -7,18 +7,41 @@
 
 #include "tuples.h"
 
-/** class RDO::Postgres::TupleList */
-VALUE rdo_postgres_cTupleList;
-
 /** Wrapper for the TupleList class */
 typedef struct {
   PGresult * res;
 } RDOPostgresTupleList;
 
+/** class RDO::Postgres::TupleList */
+static VALUE rdo_postgres_cTupleList;
+
 /** Used to free the struct wrapped by TupleList during GC */
-void rdo_postgres_tuple_list_free(RDOPostgresTupleList * list) {
+static void rdo_postgres_tuple_list_free(RDOPostgresTupleList * list) {
   PQclear(list->res);
   free(list);
+}
+
+/** Get the value as a ruby type */
+static VALUE rdo_postgres_tuple_list_cast_value(PGresult * res, int row, int col) {
+  if (PQgetisnull(res, row, col)) {
+    return Qnil;
+  }
+
+  char * value  = PQgetvalue(res, row, col);
+  int    length = PQgetlength(res, row, col);
+
+  switch (PQftype(res, col)) {
+    case INT2OID:
+    case INT4OID:
+    case INT8OID:
+      return rb_cstr2inum(value, 10);
+
+    case BOOLOID:
+      return (value[0] == 't') ? Qtrue : Qfalse;
+
+    default:
+      return rb_str_new(value, length);
+  }
 }
 
 /** Factory to return a new instance of TupleList for a result */
@@ -35,7 +58,7 @@ VALUE rdo_postgres_tuple_list_new(PGresult * res) {
 }
 
 /** Allow iteration over all tuples, yielding Hashes into a block */
-VALUE rdo_postgres_tuple_list_each(VALUE self) {
+static VALUE rdo_postgres_tuple_list_each(VALUE self) {
   if (!rb_block_given_p()) {
     return self;
   }
@@ -54,9 +77,7 @@ VALUE rdo_postgres_tuple_list_each(VALUE self) {
     for (; j < nfields; ++j) {
       rb_hash_aset(hash,
           ID2SYM(rb_intern(PQfname(list->res, j))),
-          rb_str_new(
-            PQgetvalue(list->res, i, j),
-            PQgetlength(list->res, i, j)));
+          rdo_postgres_tuple_list_cast_value(list->res, i, j));
     }
 
     rb_yield(hash);

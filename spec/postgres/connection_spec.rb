@@ -5,6 +5,8 @@ describe RDO::Postgres::Connection do
   let(:options)    { connection_uri }
   let(:connection) { RDO.connect(options) }
 
+  after(:each) { connection.close rescue nil }
+
   describe "#initialize" do
     context "with valid settings" do
       it "opens a connection to the server" do
@@ -119,12 +121,12 @@ describe RDO::Postgres::Connection do
         end
 
         it "provides the return values" do
-          result.first[:id].to_i.should == 1
-          result.first[:name].to_s.should == "bob"
+          result.first[:id].should == 1
+          result.first[:name].should == "bob"
         end
 
         it "provides the #insert_id" do
-          result.insert_id.to_i.should == 1
+          result.insert_id.should == 1
         end
 
         it "provides the number of #affected_rows" do
@@ -147,6 +149,54 @@ describe RDO::Postgres::Connection do
 
         it "provides the number of #affected_rows" do
           result.affected_rows.should == 1
+        end
+      end
+    end
+
+    context "with a SELECT" do
+      before(:each) do
+        connection.execute("CREATE SCHEMA rdo_test")
+        connection.execute("SET search_path = rdo_test")
+      end
+
+      context "returning no rows" do
+        let(:result) { connection.execute("SELECT unnest('{}'::text[])") }
+
+        it "returns a RDO::Result" do
+          result.should be_a_kind_of(RDO::Result)
+        end
+
+        it "has no tuples" do
+          result.count.should == 0
+        end
+
+        it "can be converted to an empty array" do
+          result.to_a.should == []
+        end
+      end
+
+      context "returning rows" do
+        before(:each) do
+          connection.execute(
+            "CREATE TABLE users (id serial primary key, name text)"
+          )
+          connection.execute("INSERT INTO users (name) VALUES ('bob'), ('barry')")
+        end
+
+        let(:result) { connection.execute("SELECT * FROM users") }
+
+        it "returns a RDO::Result" do
+          result.should be_a_kind_of(RDO::Result)
+        end
+
+        it "provides the row count" do
+          result.count.should == 2
+        end
+
+        it "allows enumeration of the rows" do
+          rows = []
+          result.each{|row| rows << row }
+          rows.should == [{id: 1, name: "bob"}, {id: 2, name: "barry"}]
         end
       end
     end

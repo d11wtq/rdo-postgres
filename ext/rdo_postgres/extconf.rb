@@ -14,7 +14,8 @@ def have_build_env
   [
     have_library("pq") || have_library("libpq"),
     have_header("libpq-fe.h"),
-    have_header("postgres.h")
+    have_header("postgres.h"),
+    have_header("catalog/pg_type.h")
   ].all?
 end
 
