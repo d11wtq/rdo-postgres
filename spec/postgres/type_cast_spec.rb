@@ -56,4 +56,24 @@ describe RDO::Postgres::Connection, "type casting" do
       end
     end
   end
+
+  describe "bytea cast" do
+    let(:sql) { "SELECT decode('00112233', 'hex')::bytea" }
+
+    context "when bytea_output = hex" do
+      before(:each) { connection.execute("SET bytea_output = hex") }
+
+      it "returns a String" do
+        value.should == "\x00\x11\x22\x33"
+      end
+    end
+
+    context "when bytea_output = escape" do
+      before(:each) { connection.execute("SET bytea_output = escape") }
+
+      it "returns a String" do
+        value.should == "\x00\x11\x22\x33"
+      end
+    end
+  end
 end

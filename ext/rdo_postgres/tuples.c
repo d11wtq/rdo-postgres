@@ -7,10 +7,15 @@
 
 #include "tuples.h"
 
+#define RDO_PG_NEW_HEX_P(s, len) (len > 2 && s[0] == '\\' && s[1] == 'x')
+
 /** Wrapper for the TupleList class */
 typedef struct {
   PGresult * res;
 } RDOPostgresTupleList;
+
+/** Lookup table for fast conversion of bytea hex strings to binary data */
+static char * RDOPostgres_HexLookup;
 
 /** class RDO::Postgres::TupleList */
 static VALUE rdo_postgres_cTupleList;
@@ -19,6 +24,33 @@ static VALUE rdo_postgres_cTupleList;
 static void rdo_postgres_tuple_list_free(RDOPostgresTupleList * list) {
   PQclear(list->res);
   free(list);
+}
+
+/** Cast from a bytea to a String according to the new (>= 9.0) hex format */
+static VALUE rdo_postgres_tuple_list_cast_bytea_hex(char * hex, size_t len) {
+  size_t   buflen = (len - 2) / 2;
+  char   * buffer = malloc(sizeof(char) * buflen);
+  char   * s      = hex + 2;
+  char   * b      = buffer;
+
+  for (; *s; s += 2, ++b)
+    *b = (RDOPostgres_HexLookup[*s] << 4)
+      + (RDOPostgres_HexLookup[*(s + 1)]);
+
+  VALUE str = rb_str_new(buffer, buflen);
+  free(buffer);
+
+  return str;
+}
+
+/** Cast from a bytea to a String according to a regular escape format */
+static VALUE rdo_postgres_tuple_list_cast_bytea_escape(char * value, size_t length) {
+  unsigned char * bytes  = PQunescapeBytea(value, &length);
+
+  VALUE str = rb_str_new(bytes, length);
+  PQfreemem(bytes);
+
+  return str;
 }
 
 /** Get the value as a ruby type */
@@ -38,6 +70,13 @@ static VALUE rdo_postgres_tuple_list_cast_value(PGresult * res, int row, int col
 
     case BOOLOID:
       return (value[0] == 't') ? Qtrue : Qfalse;
+
+    case BYTEAOID:
+      if (RDO_PG_NEW_HEX_P(value, length)) {
+        return rdo_postgres_tuple_list_cast_bytea_hex(value, length);
+      } else {
+        return rdo_postgres_tuple_list_cast_bytea_escape(value, length);
+      }
 
     default:
       return rb_str_new(value, length);
@@ -97,6 +136,20 @@ void Init_rdo_postgres_tuples(void) {
 
   rb_define_method(rdo_postgres_cTupleList,
       "each", rdo_postgres_tuple_list_each, 0);
+
+  /* Initialize hex decoding lookup table */
+  RDOPostgres_HexLookup = malloc(sizeof(char) * 128);
+
+  char c;
+
+  for (c = '\0'; c < '\x7f'; ++c)
+    RDOPostgres_HexLookup[c] = 0;
+
+  for (c = '0'; c <= '9'; ++c)
+    RDOPostgres_HexLookup[c] = c - '0';
+
+  for (c = 'a'; c <= 'f'; ++c)
+    RDOPostgres_HexLookup[c] = 10 + c - 'a';
 
   rb_include_module(rdo_postgres_cTupleList, rb_mEnumerable);
 }
