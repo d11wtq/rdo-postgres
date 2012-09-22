@@ -26,16 +26,25 @@ static void rdo_postgres_tuple_list_free(RDOPostgresTupleList * list) {
   free(list);
 }
 
-/** Cast from a bytea to a String according to the new (>= 9.0) hex format */
+/** Cast from a bytea to a String according to the new (PG 9.0) hex format */
 static VALUE rdo_postgres_tuple_list_cast_bytea_hex(char * hex, size_t len) {
+  if ((len % 2) != 0) {
+    rb_raise(rb_eRuntimeError,
+        "Bad hex value provided for bytea (not divisible by 2)");
+  }
+
   size_t   buflen = (len - 2) / 2;
   char   * buffer = malloc(sizeof(char) * buflen);
   char   * s      = hex + 2;
   char   * b      = buffer;
 
+  if (buffer == NULL) {
+    rb_raise(rb_eRuntimeError,
+        "Failed to allocate %ld bytes for bytea conversion", buflen);
+  }
+
   for (; *s; s += 2, ++b)
-    *b = (RDOPostgres_HexLookup[*s] << 4)
-      + (RDOPostgres_HexLookup[*(s + 1)]);
+    *b = (RDOPostgres_HexLookup[*s] << 4) + (RDOPostgres_HexLookup[*(s + 1)]);
 
   VALUE str = rb_str_new(buffer, buflen);
   free(buffer);
@@ -44,11 +53,16 @@ static VALUE rdo_postgres_tuple_list_cast_bytea_hex(char * hex, size_t len) {
 }
 
 /** Cast from a bytea to a String according to a regular escape format */
-static VALUE rdo_postgres_tuple_list_cast_bytea_escape(char * value, size_t length) {
-  unsigned char * bytes  = PQunescapeBytea(value, &length);
+static VALUE rdo_postgres_tuple_list_cast_bytea_escape(char * escaped, size_t len) {
+  unsigned char * buffer  = PQunescapeBytea(escaped, &len);
 
-  VALUE str = rb_str_new(bytes, length);
-  PQfreemem(bytes);
+  if (buffer == NULL) {
+    rb_raise(rb_eRuntimeError,
+        "Failed to allocate memory for PQunescapeBytea() conversion");
+  }
+
+  VALUE str = rb_str_new(buffer, len);
+  PQfreemem(buffer);
 
   return str;
 }
@@ -140,6 +154,12 @@ void Init_rdo_postgres_tuples(void) {
   /* Initialize hex decoding lookup table */
   RDOPostgres_HexLookup = malloc(sizeof(char) * 128);
 
+  if (RDOPostgres_HexLookup == NULL) {
+    rb_raise(rb_eRuntimeError,
+        "Failed to allocate 128 bytes for internal lookup table");
+  }
+
+  // initialize hexadecimal lookup table
   char c;
 
   for (c = '\0'; c < '\x7f'; ++c)
@@ -150,6 +170,9 @@ void Init_rdo_postgres_tuples(void) {
 
   for (c = 'a'; c <= 'f'; ++c)
     RDOPostgres_HexLookup[c] = 10 + c - 'a';
+
+  for (c = 'A'; c <= 'F'; ++c)
+    RDOPostgres_HexLookup[c] = 10 + c - 'A';
 
   rb_include_module(rdo_postgres_cTupleList, rb_mEnumerable);
 }
