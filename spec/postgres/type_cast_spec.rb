@@ -209,4 +209,30 @@ describe RDO::Postgres::Connection, "type casting" do
       end
     end
   end
+
+  describe "date cast" do
+    context "with YYYY-MM-DD format date" do
+      let(:sql) { "SELECT '2012-09-22'::date" }
+
+      it "returns a Date" do
+        value.should == Date.new(2012, 9, 22)
+      end
+    end
+
+    context "with YYY-MM-DD AD format date" do
+      let(:sql) { "SELECT '432-09-22 AD'::date" }
+
+      it "returns a Date" do
+        value.should == Date.new(432, 9, 22)
+      end
+    end
+
+    context "with YYY-MM-DD BC format date" do
+      let(:sql) { "SELECT '432-09-22 BC'::date" }
+
+      it "returns a Date" do
+        value.should == Date.new(-431, 9, 22)
+      end
+    end
+  end
 end

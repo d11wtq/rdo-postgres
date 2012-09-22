@@ -100,6 +100,10 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
         return rdo_postgres_cast_bytea_escape(value, length);
       }
 
+    case DATEOID:
+      return rb_funcall(rb_path2class("Date"),
+          rb_intern("parse"), 1, rb_str_new(value, length));
+
     default:
       return rb_str_new(value, length);
   }
@@ -107,6 +111,9 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
 
 /* Initialize hex decoding lookup table */
 void Init_rdo_postgres_casts(void) {
+  rb_require("bigdecimal");
+  rb_require("date");
+
   RDOPostgres_HexLookup = malloc(sizeof(char) * 128);
 
   if (RDOPostgres_HexLookup == NULL) {
