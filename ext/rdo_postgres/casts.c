@@ -72,6 +72,11 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
     case FLOAT8OID:
       return rb_float_new(rb_cstr_to_dbl(value, Qfalse));
 
+    case NUMERICOID:
+      return rb_funcall(rb_path2class("BigDecimal"),
+          rb_intern("new"), 1,
+          rb_str_new(value, length));
+
     case BOOLOID:
       return (value[0] == 't') ? Qtrue : Qfalse;
 
