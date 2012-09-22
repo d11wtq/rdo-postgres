@@ -7,8 +7,8 @@
 
 #include <stdio.h>
 #include <ruby.h>
-#include <postgres.h>
 #include <libpq-fe.h>
+#include <postgres.h>
 
 #include "tuples.h"
 
@@ -27,6 +27,7 @@ static void rdo_postgres_connection_free(RDOPostgres * conn) {
 /** Postgres outputs notices (e.g. auto-generating sequence...) unless overridden */
 static void rdo_postgres_connection_notice_processor(void * arg, const char * msg) {}
 
+/** Extract information about the result into a ruby Hash */
 static VALUE rdo_postgres_result_info_new(PGresult * res) {
   VALUE info = rb_hash_new();
   rb_hash_aset(info, ID2SYM(rb_intern("count")), INT2NUM(PQntuples(res)));

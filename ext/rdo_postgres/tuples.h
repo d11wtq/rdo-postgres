@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <ruby.h>
 #include <libpq-fe.h>
-#include <postgres.h>
-#include <catalog/pg_type.h>
 
 /**
  * Create a new RDO::Postgres::TupleList.
