@@ -19,6 +19,34 @@
  */
 
 /**
+ * Convert a C string to a ruby String.
+ *
+ * @param (char *) s
+ *   a C string that is valid in the default encoding
+ *
+ * @param (size_t) len
+ *   the length of the string
+ *
+ * @return VALUE (String)
+ *   a Ruby String
+ */
+#define RDO_STRING(s, len) (rb_str_new(s, len))
+
+/**
+ * Convert a C string to a ruby String, assuming possible NULL bytes.
+ *
+ * @param (char *) s
+ *   a C string, possibly containing nulls
+ *
+ * @param (size_t) len
+ *   the length of the string
+ *
+ * @return VALUE (String)
+ *   a Ruby String
+ */
+#define RDO_BINARY_STRING(s, len) (rb_str_new(s, len))
+
+/**
  * Convert a C string to a Fixnum.
  */
 #define RDO_FIXNUM(s) (rb_cstr2inum(s, 10))

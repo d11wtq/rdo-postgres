@@ -95,8 +95,12 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
     case TIMESTAMPTZOID:
       return RDO_DATE_TIME_WITH_ZONE(value);
 
+    case TEXTOID:
+    case CHAROID:
+      return RDO_STRING(value, length);
+
     default:
-      return rb_str_new(value, length);
+      return RDO_BINARY_STRING(value, length);
   }
 }
 
