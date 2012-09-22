@@ -22,24 +22,16 @@ describe RDO::Postgres::Connection, "type casting" do
       value.should == 42
     end
 
-    context "using int2" do
-      let(:sql) { "SELECT 42::int2" }
+    context "using smallint" do
+      let(:sql) { "SELECT 42::smallint" }
 
       it "returns a Fixnum" do
         value.should == 42
       end
     end
 
-    context "using int4" do
-      let(:sql) { "SELECT 42::int4" }
-
-      it "returns a Fixnum" do
-        value.should == 42
-      end
-    end
-
-    context "using int8" do
-      let(:sql) { "SELECT 42::int8" }
+    context "using bigint" do
+      let(:sql) { "SELECT 42::bigint" }
 
       it "returns a Fixnum" do
         value.should == 42
@@ -121,8 +113,8 @@ describe RDO::Postgres::Connection, "type casting" do
       value.should >= 1.199
     end
 
-    context "using float4" do
-      let(:sql) { "SELECT 1.2::float4" }
+    context "using real" do
+      let(:sql) { "SELECT 1.2::real" }
 
       it "returns a Float" do
         value.should be_a_kind_of(Float)
@@ -131,13 +123,48 @@ describe RDO::Postgres::Connection, "type casting" do
       end
     end
 
-    context "using float8" do
-      let(:sql) { "SELECT 1.2::float8" }
+    context "using double precision" do
+      let(:sql) { "SELECT 1.2::double precision" }
 
       it "returns a Float" do
         value.should be_a_kind_of(Float)
         value.should <= 1.201
         value.should >= 1.199
+      end
+    end
+
+    context "for 'NaN'" do
+      let(:sql) { "SELECT 'NaN'::float" }
+
+      it "returns Float::NAN" do
+        value.should be_a_kind_of(Float)
+        value.should be_nan
+      end
+    end
+
+    context "for 'Infinity'" do
+      let(:sql) { "SELECT 'Infinity'::float" }
+
+      it "returns Float::INFINITY" do
+        value.should  == Float::INFINITY
+      end
+    end
+
+    context "for '-Infinity'" do
+      let(:sql) { "SELECT '-Infinity'::float" }
+
+      it "returns -Float::INFINITY" do
+        value.should  == -Float::INFINITY
+      end
+    end
+
+    context "for '1E-06'" do
+      let(:sql) { "SELECT '1E-06'::float" }
+
+      it "returns 1e-06" do
+        value.should be_a_kind_of(Float)
+        value.should >= Float("1E-06") - 0.01
+        value.should <= Float("1E-06") + 0.01
       end
     end
   end

@@ -53,6 +53,19 @@ static VALUE rdo_postgres_cast_bytea_escape(char * escaped, size_t len) {
   return str;
 }
 
+static VALUE rdo_postgres_cast_float(char * str) {
+  if (strcmp(str, "NaN") == 0) {
+    return rb_const_get(rb_cFloat, rb_intern("NAN"));
+  } else if (strcmp(str, "Infinity") == 0) {
+    return rb_const_get(rb_cFloat, rb_intern("INFINITY"));
+  } else if (strcmp(str, "-Infinity") == 0) {
+    return rb_funcall(rb_const_get(rb_cFloat, rb_intern("INFINITY")),
+        rb_intern("*"), 1, INT2NUM(-1));
+  }
+
+  return rb_float_new(rb_cstr_to_dbl(str, Qfalse));
+}
+
 /** Get the value as a ruby type */
 VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
   if (PQgetisnull(res, row, col)) {
@@ -70,7 +83,7 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
 
     case FLOAT4OID:
     case FLOAT8OID:
-      return rb_float_new(rb_cstr_to_dbl(value, Qfalse));
+      return rdo_postgres_cast_float(value);
 
     case NUMERICOID:
       return rb_funcall(rb_path2class("BigDecimal"),
