@@ -11,6 +11,7 @@
 #include <postgres.h>
 
 #include "tuples.h"
+#include "params.h"
 
 /** RDO::Postgres::Connection wraps this struct */
 typedef struct {
@@ -100,6 +101,10 @@ static VALUE rdo_postgres_connection_open_p(VALUE self) {
   return conn->is_open ? Qtrue : Qfalse;
 }
 
+#define RDO_PG_INFER_OIDS NULL
+#define RDO_PG_TEXT_INPUT NULL
+#define RDO_PG_TEXT_OUTPUT 0
+
 /** Execute a statement, with optional bind parameters */
 static VALUE rdo_postgres_connection_execute(int argc, VALUE * args, VALUE self) {
   if (argc < 1) {
@@ -116,8 +121,36 @@ static VALUE rdo_postgres_connection_execute(int argc, VALUE * args, VALUE self)
 
   Check_Type(args[0], T_STRING);
 
-  PGresult       * res    = PQexec(conn->ptr, RSTRING_PTR(args[0]));
-  ExecStatusType   status = PQresultStatus(res);
+  int  nparams = argc - 1;
+
+  char * stmt = rdo_postgres_params_inject_markers(RSTRING_PTR(args[0]));
+
+  char * values  [nparams];
+  int    lengths [nparams];
+  char * strval = NULL;
+
+  int i = 0;
+
+  for (; i < nparams; ++i) {
+    Check_Type(args[i + 1], T_STRING);
+    strval = RSTRING_PTR(args[i + 1]);
+    values[i]  = strval;
+    lengths[i] = strlen(strval);
+  }
+
+  PGresult * res = PQexecParams(conn->ptr,
+      stmt,
+      nparams,
+      RDO_PG_INFER_OIDS,
+      values,
+      lengths,
+      RDO_PG_TEXT_INPUT,
+      RDO_PG_TEXT_OUTPUT
+      );
+
+  ExecStatusType status = PQresultStatus(res);
+
+  free(stmt);
 
   if (status == PGRES_BAD_RESPONSE || status == PGRES_FATAL_ERROR) {
     rb_raise(rb_path2class("RDO::Exception"),
@@ -134,6 +167,7 @@ static VALUE rdo_postgres_connection_execute(int argc, VALUE * args, VALUE self)
  * Extension initializer.
  */
 void Init_rdo_postgres(void) {
+  rb_require("rdo");
   rb_require("rdo/postgres/connection");
 
   VALUE cPostgresConnection = rb_path2class("RDO::Postgres::Connection");

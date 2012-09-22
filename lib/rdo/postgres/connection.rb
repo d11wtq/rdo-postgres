@@ -38,13 +38,12 @@ module RDO
         if options[:time_zone]
           execute "SET TIME ZONE '#{options[:time_zone]}'"
         else
-          execute "SET TIME ZONE interval '#{detect_time_zone}' hour to minute"
+          execute "SET TIME ZONE interval '#{RDO::Util.system_time_zone}' hour to minute"
         end
       end
 
-      def detect_time_zone
-        require "date" unless defined? DateTime
-        DateTime.now.zone
+      def substitue_markers(sql)
+        sql.gsub("?", "$1")
       end
     end
   end

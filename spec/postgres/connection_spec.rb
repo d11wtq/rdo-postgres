@@ -105,7 +105,7 @@ describe RDO::Postgres::Connection do
         connection.execute("CREATE SCHEMA rdo_test")
         connection.execute("SET search_path = rdo_test")
         connection.execute(
-          "CREATE TABLE users (id serial primary key, name text)"
+          "CREATE TABLE users (id serial primary key, name text, salt bytea)"
         )
       end
 
@@ -145,6 +145,20 @@ describe RDO::Postgres::Connection do
 
         it "has a nil #insert_id" do
           result.insert_id.should be_nil
+        end
+
+        it "provides the number of #affected_rows" do
+          result.affected_rows.should == 1
+        end
+      end
+
+      context "using bind parameters" do
+        let(:result) do
+          connection.execute("INSERT INTO users (name) VALUES (?)", "bob")
+        end
+
+        it "returns a RDO::Result" do
+          result.should be_a_kind_of(RDO::Result)
         end
 
         it "provides the number of #affected_rows" do
