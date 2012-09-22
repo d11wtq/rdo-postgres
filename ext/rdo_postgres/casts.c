@@ -16,7 +16,7 @@ static char * RDOPostgres_HexLookup;
 static VALUE rdo_postgres_cast_bytea_hex(char * hex, size_t len) {
   if ((len % 2) != 0) {
     rb_raise(rb_eRuntimeError,
-        "Bad hex value provided for bytea (not divisible by 2)");
+        "Bad hex value provided for bytea (length not divisible by 2)");
   }
 
   size_t   buflen = (len - 2) / 2;
@@ -67,6 +67,10 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
     case INT4OID:
     case INT8OID:
       return rb_cstr2inum(value, 10);
+
+    case FLOAT4OID:
+    case FLOAT8OID:
+      return rb_float_new(rb_cstr_to_dbl(value, Qfalse));
 
     case BOOLOID:
       return (value[0] == 't') ? Qtrue : Qfalse;
