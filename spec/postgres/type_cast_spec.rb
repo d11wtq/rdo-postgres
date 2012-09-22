@@ -235,4 +235,38 @@ describe RDO::Postgres::Connection, "type casting" do
       end
     end
   end
+
+  describe "timestamp cast" do
+    context "without a time zone" do
+      let(:sql) { "SELECT '2012-09-22 04:26:34'::timestamp" }
+
+      it "returns a DateTime in the local time zone" do
+        value.should == DateTime.new(2012, 9, 22, 4, 26, 34, DateTime.now.zone)
+      end
+    end
+
+    context "with a time zone" do
+      let(:sql) { "SELECT '2012-09-22 04:26:34'::timestamptz" }
+
+      it "returns a DateTime, in the server's time zone" do
+        value.should == DateTime.new(2012, 9, 22, 4, 26, 34, DateTime.now.zone)
+      end
+
+      context "specifying an alternate time zone" do
+        let(:sql) { "SELECT '2012-09-22 04:26:34'::timestamptz at time zone 'UTC'" }
+
+        it "returns a DateTime at the given time zone" do
+          value.should == DateTime.new(2012, 9, 21, 18, 26, 34, DateTime.now.zone)
+        end
+      end
+
+      context "with a different time zone set on the connection" do
+        before(:each) { connection.execute("SET timezone = 'UTC'") }
+
+        it "returns a DateTime with the conversion done accordingly" do
+          value.should == DateTime.new(2012, 9, 22, 14, 26, 34, DateTime.now.zone)
+        end
+      end
+    end
+  end
 end

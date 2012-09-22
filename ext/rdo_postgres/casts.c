@@ -8,6 +8,7 @@
 #include "casts.h"
 #include <postgres.h>
 #include <catalog/pg_type.h>
+#include "macros.h"
 
 /** Lookup table for fast conversion of bytea hex strings to binary data */
 static char * RDOPostgres_HexLookup;
@@ -53,19 +54,6 @@ static VALUE rdo_postgres_cast_bytea_escape(char * escaped, size_t len) {
   return str;
 }
 
-static VALUE rdo_postgres_cast_float(char * str) {
-  if (strcmp(str, "NaN") == 0) {
-    return rb_const_get(rb_cFloat, rb_intern("NAN"));
-  } else if (strcmp(str, "Infinity") == 0) {
-    return rb_const_get(rb_cFloat, rb_intern("INFINITY"));
-  } else if (strcmp(str, "-Infinity") == 0) {
-    return rb_funcall(rb_const_get(rb_cFloat, rb_intern("INFINITY")),
-        rb_intern("*"), 1, INT2NUM(-1));
-  }
-
-  return rb_float_new(rb_cstr_to_dbl(str, Qfalse));
-}
-
 /** Get the value as a ruby type */
 VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
   if (PQgetisnull(res, row, col)) {
@@ -79,19 +67,17 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
     case INT2OID:
     case INT4OID:
     case INT8OID:
-      return rb_cstr2inum(value, 10);
+      return RDO_FIXNUM(value);
 
     case FLOAT4OID:
     case FLOAT8OID:
-      return rdo_postgres_cast_float(value);
+      return RDO_FLOAT(value);
 
     case NUMERICOID:
-      return rb_funcall(rb_path2class("BigDecimal"),
-          rb_intern("new"), 1,
-          rb_str_new(value, length));
+      return RDO_DECIMAL(value);
 
     case BOOLOID:
-      return (value[0] == 't') ? Qtrue : Qfalse;
+      return RDO_BOOL(value);
 
     case BYTEAOID:
       if (RDO_PG_NEW_HEX_P(value, length)) {
@@ -101,8 +87,13 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
       }
 
     case DATEOID:
-      return rb_funcall(rb_path2class("Date"),
-          rb_intern("parse"), 1, rb_str_new(value, length));
+      return RDO_DATE(value);
+
+    case TIMESTAMPOID:
+      return RDO_DATE_TIME_WITHOUT_ZONE(value);
+
+    case TIMESTAMPTZOID:
+      return RDO_DATE_TIME_WITH_ZONE(value);
 
     default:
       return rb_str_new(value, length);
@@ -111,9 +102,6 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
 
 /* Initialize hex decoding lookup table */
 void Init_rdo_postgres_casts(void) {
-  rb_require("bigdecimal");
-  rb_require("date");
-
   RDOPostgres_HexLookup = malloc(sizeof(char) * 128);
 
   if (RDOPostgres_HexLookup == NULL) {
