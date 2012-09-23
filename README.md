@@ -49,6 +49,25 @@ conn = RDO.connect(
 )
 ```
 
+### Bind parameters support
+
+PostgreSQL uses $1, $2 etc for bind parameters. RDO uses '?'. You can use
+either, but you **cannot** mix both styles in the same query, or you will
+get errors.
+
+These are ok:
+
+``` ruby
+conn.execute("SELECT * FROM users WHERE banned = ? AND created_at > ?", true, 1.week.ago)
+conn.execute("SELECT * FROM users WHERE banned = $1 AND created_at > $2", true, 1.week.ago)
+```
+
+This is **not ok**:
+
+``` ruby
+conn.execute("SELECT * FROM users WHERE banned = $1 AND created_at > ?", true, 1.week.ago)
+```
+
 ## Contributing
 
 Contributions to support older versions of PostgreSQL (< 7.4) welcomed,
