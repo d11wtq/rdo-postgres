@@ -396,4 +396,62 @@ describe RDO::Postgres::Driver, "bind parameter support" do
       end
     end
   end
+
+  describe "Date param" do
+    context "against a Date field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, dob date)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (dob) VALUES (?) RETURNING *",
+          Date.new(1983, 5, 3)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, dob: Date.new(1983, 5, 3)}
+      end
+    end
+
+    context "against a text field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, name text)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (name) VALUES (?) RETURNING *",
+          Date.new(1983, 5, 3)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, name: "1983-05-03"}
+      end
+    end
+
+    context "against a timestamp field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, created_at timestamp)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (created_at) VALUES (?) RETURNING *",
+          Date.new(1983, 5, 3)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, created_at: DateTime.new(1983, 5, 3, 0, 0, 0, DateTime.now.zone)}
+      end
+    end
+
+    context "against a timestamptz field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, created_at timestamptz)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (created_at) VALUES (?) RETURNING *",
+          Date.new(1983, 5, 3)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, created_at: DateTime.new(1983, 5, 3, 0, 0, 0, DateTime.now.zone)}
+      end
+    end
+  end
 end

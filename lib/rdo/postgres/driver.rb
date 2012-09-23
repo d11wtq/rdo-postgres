@@ -11,7 +11,7 @@ module RDO
     #
     # All default behaviour is overloaded.
     class Driver < RDO::Driver
-      # implementation defined by C extension
+      # most implementation defined by C extension
 
       # Internally this driver uses prepared statements.
       #
