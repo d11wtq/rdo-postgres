@@ -23,7 +23,7 @@ describe RDO::Postgres::Driver, "bind parameter support" do
     end
   end
 
-  describe "text param" do
+  describe "String param" do
     context "against a text field" do
       let(:table) { "CREATE TABLE test (id serial primary key, name text)" }
       let(:tuple) do
@@ -125,11 +125,127 @@ describe RDO::Postgres::Driver, "bind parameter support" do
       let(:table) { "CREATE TABLE test (id serial primary key, salt bytea)" }
       let(:tuple) do
         connection.execute(
-          "INSERT INTO test (salt) VALUES (?) RETURNING *", "\x00\x01\x02").first
+          "INSERT INTO test (salt) VALUES (?) RETURNING *", "\x00\x01\x02"
+        ).first
       end
 
       it "is inferred correctly" do
         tuple.should == {id: 1, salt: "\x00\x01\x02"}
+      end
+
+      context "that is empty" do
+        let(:table) { "CREATE TABLE test (id serial primary key, salt bytea)" }
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (salt) VALUES (?) RETURNING *", ""
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, salt: ""}
+        end
+      end
+    end
+  end
+
+  describe "Fixnum param" do
+    context "against an integer field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, age integer)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (age) VALUES (?) RETURNING *",
+          42
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, age: 42}
+      end
+    end
+
+    context "against a text field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, name text)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (name) VALUES (?) RETURNING *",
+          42
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, name: "42"}
+      end
+    end
+
+    context "against a float field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, score float)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (score) VALUES (?) RETURNING *",
+          42
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, score: 42.0}
+      end
+    end
+
+    context "agsinst a decimal field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, score decimal)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (score) VALUES (?) RETURNING *",
+          42
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, score: BigDecimal("42")}
+      end
+    end
+
+    context "against a boolean field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, rad boolean)" }
+
+      context "when it is 0" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (rad) VALUES (?) RETURNING *",
+            0
+          ).first
+        end
+
+        it "is inferred correctly (false)" do
+          tuple.should == {id: 1, rad: false}
+        end
+      end
+
+      context "when it is 1" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (rad) VALUES (?) RETURNING *",
+            1
+          ).first
+        end
+
+        it "is inferred correctly (true)" do
+          tuple.should == {id: 1, rad: true}
+        end
+      end
+    end
+
+    context "against a bytea field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, salt bytea)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (salt) VALUES (?) RETURNING *",
+          42
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, salt: "42"}
       end
     end
   end

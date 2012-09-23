@@ -144,6 +144,8 @@ static VALUE rdo_postgres_statement_executor_command(VALUE self) {
   return rb_str_new2(executor->cmd);
 }
 
+#define RDO_OBJ_TO_S(obj) (rb_funcall(obj, rb_intern("to_s"), 0))
+
 /** Execute with PQexecPrepared() and return a Result */
 static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
     VALUE self) {
@@ -167,7 +169,9 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
   int    i;
 
   for (i = 0; i < argc; ++i) {
-    Check_Type(args[i], T_STRING);
+    if (TYPE(args[i]) != T_STRING) {
+      args[i] = RDO_OBJ_TO_S(args[i]);
+    }
 
     if (executor->param_types[i] == BYTEAOID) {
       values[i] = PQescapeByteaConn(executor->driver->conn_ptr,
@@ -188,6 +192,12 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
       lengths,
       RDO_PG_TEXT_INPUT,
       RDO_PG_TEXT_OUTPUT);
+
+  for (i = 0; i < argc; ++i) {
+    if (executor->param_types[i] == BYTEAOID) {
+      PQfreemem(values[i]);
+    }
+  }
 
   ExecStatusType status = PQresultStatus(res);
 
