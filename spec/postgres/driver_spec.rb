@@ -264,4 +264,10 @@ describe RDO::Postgres::Driver do
       end
     end
   end
+
+  describe "#quote" do
+    it "quotes a string literal for insertion into the SQL" do
+      connection.quote("what's this?").should == "what''s this?"
+    end
+  end
 end

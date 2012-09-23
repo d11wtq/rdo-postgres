@@ -9,6 +9,7 @@
 #include "driver.h"
 #include "params.h"
 #include "tuples.h"
+#include "macros.h"
 #include <libpq-fe.h>
 #include <postgres.h>
 #include <catalog/pg_type.h>
@@ -143,8 +144,6 @@ static VALUE rdo_postgres_statement_executor_command(VALUE self) {
   Data_Get_Struct(self, RDOPostgresStatementExecutor, executor);
   return rb_str_new2(executor->cmd);
 }
-
-#define RDO_OBJ_TO_S(obj) (rb_funcall(obj, rb_intern("to_s"), 0))
 
 /** Execute with PQexecPrepared() and return a Result */
 static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,

@@ -108,6 +108,33 @@ static VALUE rdo_postgres_driver_prepare(VALUE self, VALUE cmd) {
         self, cmd, rb_str_new2(name)));
 }
 
+/** Quote a string literal for safe insertion in a statement */
+static VALUE rdo_postgres_driver_quote(VALUE self, VALUE str) {
+  if (TYPE(str) == T_NIL) {
+    return rb_str_new2("NULL");
+  } else if (TYPE(str) != T_STRING) {
+    str = RDO_OBJ_TO_S(str);
+  }
+
+  RDOPostgresDriver * driver;
+  Data_Get_Struct(self, RDOPostgresDriver, driver);
+
+  if (!(driver->is_open)) {
+    rb_raise(rb_path2class("RDO::Exception"),
+        "Unable to quote string: connection is not open");
+  }
+
+  char * quoted = malloc(sizeof(char) * RSTRING_LEN(str) * 4);
+  PQescapeStringConn(driver->conn_ptr, quoted,
+      RSTRING_PTR(str), RSTRING_LEN(str), NULL);
+
+  VALUE newstr = rb_str_new2(quoted);
+
+  free(quoted);
+
+  return newstr;
+}
+
 void Init_rdo_postgres_driver(void) {
   rb_require("rdo/postgres/driver");
 
@@ -132,6 +159,10 @@ void Init_rdo_postgres_driver(void) {
   rb_define_method(
       cPostgresConnection,
       "prepare", rdo_postgres_driver_prepare, 1);
+
+  rb_define_method(
+      cPostgresConnection,
+      "quote", rdo_postgres_driver_quote, 1);
 
   Init_rdo_postgres_statements();
 }

@@ -170,3 +170,8 @@
     rb_funcall(rb_path2class("RDO::Statement"), \
       rb_intern("new"), 1, executor) \
     )
+
+/**
+ * Convenience to call #to_s on any Ruby object.
+ */
+#define RDO_OBJ_TO_S(obj) (rb_funcall(obj, rb_intern("to_s"), 0))
