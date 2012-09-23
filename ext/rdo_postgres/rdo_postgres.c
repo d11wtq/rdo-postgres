@@ -82,6 +82,7 @@ static VALUE rdo_postgres_driver_open(VALUE self) {
   } else {
     PQsetNoticeProcessor(conn->ptr, &rdo_postgres_driver_notice_processor, NULL);
     conn->is_open = 1;
+    rb_funcall(self, rb_intern("set_time_zone"), 0);
   }
 
   return Qtrue;

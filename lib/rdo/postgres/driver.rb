@@ -12,10 +12,6 @@ module RDO
     # All default behaviour is overloaded.
     class Driver < RDO::Driver
       # implementation defined by C extension
-      def intialize(options)
-        super
-        set_time_zone
-      end
 
       private
 
