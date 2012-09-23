@@ -249,4 +249,90 @@ describe RDO::Postgres::Driver, "bind parameter support" do
       end
     end
   end
+
+  describe "Float param" do
+    context "against a float field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, score float)" }
+
+      context "when it is NaN" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (score) VALUES (?) RETURNING *",
+            Float::NAN
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, score: Float::NAN}
+        end
+      end
+
+      context "when it is Infinity" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (score) VALUES (?) RETURNING *",
+            Float::INFINITY
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, score: Float::INFINITY}
+        end
+      end
+
+      context "when it is -Infinity" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (score) VALUES (?) RETURNING *",
+            -Float::INFINITY
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, score: -Float::INFINITY}
+        end
+      end
+
+      context "when it is a real number" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (score) VALUES (?) RETURNING *",
+            12.5
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, score: 12.5}
+        end
+      end
+    end
+
+    context "against a text field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, name text)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (name) VALUES (?) RETURNING *",
+          12.5
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, name: "12.5"}
+      end
+    end
+
+    context "against a decimal field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, score decimal)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (score) VALUES (?) RETURNING *",
+          12.2
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, score: BigDecimal("12.2")}
+      end
+    end
+  end
 end
