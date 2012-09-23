@@ -14,3 +14,6 @@ typedef struct {
   int      is_open;
   int      stmt_count;
 } RDOPostgresDriver;
+
+/** Initializer called during extension init */
+void Init_rdo_postgres_driver(void);
