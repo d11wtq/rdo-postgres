@@ -270,4 +270,16 @@ describe RDO::Postgres::Driver do
       connection.quote("what's this?").should == "what''s this?"
     end
   end
+
+  describe "#prepare" do
+    it "returns a RDO::Statement" do
+      connection.prepare("SELECT ?::text").should be_a_kind_of(RDO::Statement)
+    end
+
+    it "can be executed multiple times" do
+      stmt = connection.prepare("SELECT ?::integer + ?")
+      stmt.execute(4, 7).first_value.should == 11
+      stmt.execute(5, 22).first_value.should == 27
+    end
+  end
 end
