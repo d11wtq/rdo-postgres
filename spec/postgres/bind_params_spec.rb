@@ -704,7 +704,7 @@ describe RDO::Postgres::Driver, "bind parameter support" do
     end
   end
 
-  context "arbitrary Object param" do
+  describe "arbitrary Object param" do
     context "against a text field" do
       let(:value) { Object.new }
       let(:table) { "CREATE TABLE test (id serial primary key, name text)" }
@@ -715,6 +715,188 @@ describe RDO::Postgres::Driver, "bind parameter support" do
       it "is inferred correctly (via #to_s)" do
         tuple.should == {id: 1, name: value.to_s}
       end
+    end
+  end
+
+  describe "multiple params" do
+    let(:table) do
+      <<-SQL
+      CREATE TABLE test (
+        id         serial primary key,
+        name       text,
+        age        integer,
+        admin      boolean,
+        created_at timestamptz
+      )
+      SQL
+    end
+
+    let(:tuple) do
+      connection.execute(<<-SQL, "bob", 17, false, Time.new(2012, 9, 22, 6, 34)).first
+      INSERT INTO test (
+        name, age, admin, created_at
+      ) VALUES (
+        ?, ?, ?, ?
+      ) RETURNING *
+      SQL
+    end
+
+    it "interprets them individually" do
+      tuple.should == {
+        id:         1,
+        name:       "bob",
+        age:        17,
+        admin:      false,
+        created_at: DateTime.new(2012, 9, 22, 6, 34, 0, DateTime.now.zone)
+      }
+    end
+  end
+
+  describe "when a bind marker is contained in a string literal" do
+    let(:table) do
+      <<-SQL
+      CREATE TABLE test (
+        id   serial primary key,
+        name text,
+        age  integer
+      )
+      SQL
+    end
+
+    context "without quoted apostrophes" do
+      let(:tuple) do
+        connection.execute(<<-SQL, 17).first
+        INSERT INTO test (
+          name, age
+        ) VALUES (
+          '?', ?
+        ) RETURNING *
+        SQL
+      end
+
+      it "does not consider the quoted marker" do
+        tuple.should == {id: 1, name: "?", age: 17}
+      end
+    end
+
+    context "with quoted apostrophes" do
+      let(:tuple) do
+        connection.execute(<<-SQL, 17).first
+        INSERT INTO test (
+          name, age
+        ) VALUES (
+          'you say ''hello?''', ?
+        ) RETURNING *
+        SQL
+      end
+
+      it "does not consider the quoted marker" do
+        tuple.should == {id: 1, name: "you say 'hello?'", age: 17}
+      end
+    end
+  end
+
+  describe "when a bind marker is contained in a multi-line comment" do
+    let(:table) do
+      <<-SQL
+      CREATE TABLE test (
+        id   serial primary key,
+        name text,
+        age  integer
+      )
+      SQL
+    end
+
+    context "without nesting" do
+      let(:tuple) do
+        connection.execute(<<-SQL, "jim", 17).first
+        INSERT INTO test (
+          name, age
+        ) VALUES (
+          /*
+          Are these are the values you're looking for?
+          */
+          ?, ?
+        ) RETURNING *
+        SQL
+      end
+
+      it "does not consider the commented marker" do
+        tuple.should == {id: 1, name: "jim", age: 17}
+      end
+    end
+
+    context "with nesting" do
+      let(:tuple) do
+        connection.execute(<<-SQL, "jim", 17).first
+        INSERT INTO test (
+          name, age
+        ) VALUES (
+          /*
+          Are these the /* nested */ values you're looking for?
+          */
+          ?, ?
+        ) RETURNING *
+        SQL
+      end
+
+      it "does not consider the commented marker" do
+        tuple.should == {id: 1, name: "jim", age: 17}
+      end
+    end
+  end
+
+  context "when a bind marker is contained in a single line comment" do
+    let(:table) do
+      <<-SQL
+      CREATE TABLE test (
+        id   serial primary key,
+        name text,
+        age  integer
+      )
+      SQL
+    end
+
+    let(:tuple) do
+      connection.execute(<<-SQL, "jim", 17).first
+      INSERT INTO test (
+        name, age
+      ) VALUES (
+        -- Are these are the values you're looking for? choker! /*
+        ?, ?
+      ) RETURNING *
+      SQL
+    end
+
+    it "does not consider the commented marker" do
+      tuple.should == {id: 1, name: "jim", age: 17}
+    end
+  end
+
+  context "when a bind parameter is quoted as an identifier" do
+    let(:table) do
+      <<-SQL
+      CREATE TABLE test (
+        id       serial primary key,
+        name     text,
+        age      integer,
+        "admin?" boolean
+      )
+      SQL
+    end
+
+    let(:tuple) do
+      connection.execute(<<-SQL, "jim", 17, true).first
+      INSERT INTO test (
+        name, age, "admin?"
+      ) VALUES (
+        ?, ?, ?
+      ) RETURNING *
+      SQL
+    end
+
+    it "does not confuse the quoted identifier" do
+      tuple.should == {id: 1, name: "jim", age: 17, admin?: true}
     end
   end
 end

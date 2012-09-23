@@ -132,7 +132,7 @@ VALUE rdo_postgres_statement_executor_new(VALUE driver, VALUE cmd, VALUE name) {
 
 /** Initialize the StatementExecutor with the given driver and command */
 static VALUE rdo_postgres_statement_executor_initialize(VALUE self, VALUE driver) {
-  rb_iv_set(self, "driver", driver); // make sure GC doesn't swallow it
+  rb_iv_set(self, "driver", driver); // GC safety
   rdo_postgres_statement_executor_prepare(self);
   return self;
 }
