@@ -109,7 +109,7 @@ describe RDO::Postgres::Connection do
         )
       end
 
-      context "RETURNING" do
+      context "returning rows" do
         let(:result) do
           connection.execute(
             "INSERT INTO users (name) VALUES ('bob') RETURNING *"
@@ -134,7 +134,7 @@ describe RDO::Postgres::Connection do
         end
       end
 
-      context "not RETURNING" do
+      context "not returning" do
         let(:result) do
           connection.execute("INSERT INTO users (name) VALUES ('bob')")
         end
