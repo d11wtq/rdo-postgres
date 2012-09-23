@@ -2,7 +2,7 @@ require "spec_helper"
 require "bigdecimal"
 require "date"
 
-describe RDO::Postgres::Connection, "bind parameter support" do
+describe RDO::Postgres::Driver, "bind parameter support" do
   let(:connection) { RDO.connect(connection_uri) }
   let(:table)      { "" }
 
@@ -118,6 +118,18 @@ describe RDO::Postgres::Connection, "bind parameter support" do
 
       it "is inferred correctly" do
         tuple.should == {id: 1, created_at: DateTime.new(2012, 9, 22, 10, 0, 5, "-5")}
+      end
+    end
+
+    context "against a bytea field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, salt bytea)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (salt) VALUES (?) RETURNING *", "\x00\x01\x02").first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, salt: "\x00\x01\x02"}
       end
     end
   end

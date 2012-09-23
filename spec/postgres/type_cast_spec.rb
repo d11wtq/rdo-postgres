@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe RDO::Postgres::Connection, "type casting" do
+describe RDO::Postgres::Driver, "type casting" do
   let(:options)    { connection_uri }
   let(:connection) { RDO.connect(options) }
   let(:value)      { connection.execute(sql).first_value }

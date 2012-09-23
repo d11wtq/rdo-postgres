@@ -7,10 +7,10 @@
 
 module RDO
   module Postgres
-    # Connection to the Postgres server.
+    # Driver for the Postgres server.
     #
     # All default behaviour is overloaded.
-    class Connection < RDO::Connection
+    class Driver < RDO::Driver
       # implementation defined by C extension
       def intialize(options)
         super
@@ -40,10 +40,6 @@ module RDO
         else
           execute "SET TIME ZONE interval '#{RDO::Util.system_time_zone}' hour to minute"
         end
-      end
-
-      def substitue_markers(sql)
-        sql.gsub("?", "$1")
       end
     end
   end

@@ -1,7 +1,7 @@
 require "spec_helper"
 require "uri"
 
-describe RDO::Postgres::Connection do
+describe RDO::Postgres::Driver do
   let(:options)    { connection_uri }
   let(:connection) { RDO.connect(options) }
 

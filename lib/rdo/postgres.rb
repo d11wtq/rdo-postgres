@@ -7,10 +7,10 @@
 
 require "rdo"
 require "rdo/postgres/version"
-require "rdo/postgres/connection"
+require "rdo/postgres/driver"
 require "rdo/rdo_postgres" # c ext
 
 # Register name variants for postgresql schemes
 %w[postgres postgresql].each do |name|
-  RDO::Connection.register_driver(name, RDO::Postgres::Connection)
+  RDO::Connection.register_driver(name, RDO::Postgres::Driver)
 end

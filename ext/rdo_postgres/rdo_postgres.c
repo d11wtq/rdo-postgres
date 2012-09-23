@@ -13,6 +13,11 @@
 #include "tuples.h"
 #include "params.h"
 
+/** Self-documenting constants to avoid magic numbers */
+#define RDO_PG_INFER_OIDS NULL
+#define RDO_PG_TEXT_INPUT NULL
+#define RDO_PG_TEXT_OUTPUT 0
+
 /** RDO::Postgres::Connection wraps this struct */
 typedef struct {
   PGconn * ptr;
@@ -20,13 +25,13 @@ typedef struct {
 } RDOPostgres;
 
 /** During GC, free any stranded connection */
-static void rdo_postgres_connection_free(RDOPostgres * conn) {
+static void rdo_postgres_driver_free(RDOPostgres * conn) {
   PQfinish(conn->ptr);
   free(conn);
 }
 
 /** Postgres outputs notices (e.g. auto-generating sequence...) unless overridden */
-static void rdo_postgres_connection_notice_processor(void * arg, const char * msg) {}
+static void rdo_postgres_driver_notice_processor(void * arg, const char * msg) {}
 
 /** Extract information about the result into a ruby Hash */
 static VALUE rdo_postgres_result_info_new(PGresult * res) {
@@ -41,20 +46,20 @@ static VALUE rdo_postgres_result_info_new(PGresult * res) {
 }
 
 /** Allocate memory for the connection struct */
-static VALUE rdo_postgres_connection_allocate(VALUE klass) {
+static VALUE rdo_postgres_driver_allocate(VALUE klass) {
   RDOPostgres * conn = malloc(sizeof(RDOPostgres));
 
   conn->ptr     = NULL;
   conn->is_open = 0;
 
   VALUE self = Data_Wrap_Struct(klass, 0,
-      rdo_postgres_connection_free, conn);
+      rdo_postgres_driver_free, conn);
 
   return self;
 }
 
 /** Connect to the postgres server */
-static VALUE rdo_postgres_connection_open(VALUE self) {
+static VALUE rdo_postgres_driver_open(VALUE self) {
   RDOPostgres * conn;
   Data_Get_Struct(self, RDOPostgres, conn);
 
@@ -75,7 +80,7 @@ static VALUE rdo_postgres_connection_open(VALUE self) {
         "PostgreSQL >= 7.4 required.",
         PQprotocolVersion(conn->ptr));
   } else {
-    PQsetNoticeProcessor(conn->ptr, &rdo_postgres_connection_notice_processor, NULL);
+    PQsetNoticeProcessor(conn->ptr, &rdo_postgres_driver_notice_processor, NULL);
     conn->is_open = 1;
   }
 
@@ -83,7 +88,7 @@ static VALUE rdo_postgres_connection_open(VALUE self) {
 }
 
 /** Disconnect from the postgres server, and release memory */
-static VALUE rdo_postgres_connection_close(VALUE self) {
+static VALUE rdo_postgres_driver_close(VALUE self) {
   RDOPostgres * conn;
   Data_Get_Struct(self, RDOPostgres, conn);
 
@@ -95,18 +100,14 @@ static VALUE rdo_postgres_connection_close(VALUE self) {
 }
 
 /** Preciate test if connection is open */
-static VALUE rdo_postgres_connection_open_p(VALUE self) {
+static VALUE rdo_postgres_driver_open_p(VALUE self) {
   RDOPostgres * conn;
   Data_Get_Struct(self, RDOPostgres, conn);
   return conn->is_open ? Qtrue : Qfalse;
 }
 
-#define RDO_PG_INFER_OIDS NULL
-#define RDO_PG_TEXT_INPUT NULL
-#define RDO_PG_TEXT_OUTPUT 0
-
 /** Execute a statement, with optional bind parameters */
-static VALUE rdo_postgres_connection_execute(int argc, VALUE * args, VALUE self) {
+static VALUE rdo_postgres_driver_execute(int argc, VALUE * args, VALUE self) {
   if (argc < 1) {
     rb_raise(rb_eArgError, "Wrong number of arguments (%d for 1)", argc);
   }
@@ -168,29 +169,29 @@ static VALUE rdo_postgres_connection_execute(int argc, VALUE * args, VALUE self)
  */
 void Init_rdo_postgres(void) {
   rb_require("rdo");
-  rb_require("rdo/postgres/connection");
+  rb_require("rdo/postgres/driver");
 
-  VALUE cPostgresConnection = rb_path2class("RDO::Postgres::Connection");
+  VALUE cPostgresConnection = rb_path2class("RDO::Postgres::Driver");
 
   rb_define_alloc_func(
       cPostgresConnection,
-      rdo_postgres_connection_allocate);
+      rdo_postgres_driver_allocate);
 
   rb_define_method(
       cPostgresConnection,
-      "open", rdo_postgres_connection_open, 0);
+      "open", rdo_postgres_driver_open, 0);
 
   rb_define_method(
       cPostgresConnection,
-      "close", rdo_postgres_connection_close, 0);
+      "close", rdo_postgres_driver_close, 0);
 
   rb_define_method(
       cPostgresConnection,
-      "open?", rdo_postgres_connection_open_p, 0);
+      "open?", rdo_postgres_driver_open_p, 0);
 
   rb_define_method(
       cPostgresConnection,
-      "execute", rdo_postgres_connection_execute, -1);
+      "execute", rdo_postgres_driver_execute, -1);
 
   Init_rdo_postgres_tuples();
 }
