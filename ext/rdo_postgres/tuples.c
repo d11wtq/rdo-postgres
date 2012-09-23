@@ -11,6 +11,7 @@
 /** Wrapper for the TupleList class */
 typedef struct {
   PGresult * res;
+  int        encoding;
 } RDOPostgresTupleList;
 
 /** class RDO::Postgres::TupleList */
@@ -23,9 +24,10 @@ static void rdo_postgres_tuple_list_free(RDOPostgresTupleList * list) {
 }
 
 /** Factory to return a new instance of TupleList for a result */
-VALUE rdo_postgres_tuple_list_new(PGresult * res) {
+VALUE rdo_postgres_tuple_list_new(PGresult * res, int encoding) {
   RDOPostgresTupleList * list = malloc(sizeof(RDOPostgresTupleList));
-  list->res = res;
+  list->res      = res;
+  list->encoding = encoding;
 
   VALUE obj = Data_Wrap_Struct(rdo_postgres_cTupleList, 0,
       rdo_postgres_tuple_list_free, list);
@@ -55,7 +57,7 @@ static VALUE rdo_postgres_tuple_list_each(VALUE self) {
     for (; j < nfields; ++j) {
       rb_hash_aset(hash,
           ID2SYM(rb_intern(PQfname(list->res, j))),
-          rdo_postgres_cast_value(list->res, i, j));
+          rdo_postgres_cast_value(list->res, i, j, list->encoding));
     }
 
     rb_yield(hash);

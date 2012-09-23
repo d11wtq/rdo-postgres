@@ -10,7 +10,7 @@
 #include <libpq-fe.h>
 
 /** Cast the given value from the result to a ruby type */
-VALUE rdo_postgres_cast_value(PGresult * res, int row, int col);
+VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc);
 
 /** Initialize the casting framework */
 void Init_rdo_postgres_casts(void);

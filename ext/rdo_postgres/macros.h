@@ -30,7 +30,9 @@
  * @return VALUE (String)
  *   a Ruby String
  */
-#define RDO_STRING(s, len) (rb_str_new(s, len))
+#define RDO_STRING(s, len, enc) ( \
+    rb_enc_associate_index(rb_str_new(s, len), enc > 0 ? enc : 0) \
+    )
 
 /**
  * Convert a C string to a ruby String, assuming possible NULL bytes.

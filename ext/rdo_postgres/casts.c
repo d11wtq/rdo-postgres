@@ -58,7 +58,7 @@ static VALUE rdo_postgres_cast_bytea_escape(char * escaped, size_t len) {
 }
 
 /** Get the value as a ruby type */
-VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
+VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
   if (PQgetisnull(res, row, col)) {
     return Qnil;
   }
@@ -99,7 +99,9 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
 
     case TEXTOID:
     case CHAROID:
-      return RDO_STRING(value, length);
+    case VARCHAROID:
+    case BPCHAROID:
+      return RDO_STRING(value, length, enc);
 
     default:
       return RDO_BINARY_STRING(value, length);

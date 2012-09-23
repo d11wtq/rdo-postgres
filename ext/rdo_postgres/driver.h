@@ -13,6 +13,7 @@ typedef struct {
   PGconn * conn_ptr;
   int      is_open;
   int      stmt_count;
+  int      encoding;
 } RDOPostgresDriver;
 
 /** Initializer called during extension init */

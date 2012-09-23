@@ -213,7 +213,7 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
 
   return rb_funcall(rb_path2class("RDO::Result"),
       rb_intern("new"), 2,
-      rdo_postgres_tuple_list_new(res),
+      rdo_postgres_tuple_list_new(res, executor->driver->encoding),
       rdo_postgres_result_info_new(res));
 }
 

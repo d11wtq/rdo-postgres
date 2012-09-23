@@ -39,17 +39,29 @@ module RDO
           dbname:          options[:database],
           user:            options[:user],
           password:        options[:password],
-          client_encoding: options[:encoding],
           connect_timeout: options[:connect_timeout]
         }.reject{|k,v| v.nil?}.map{|pair| pair.join("=")}.join(" ")
       end
 
+      def after_open
+        set_time_zone
+        set_encoding
+      end
+
       def set_time_zone
         if options[:time_zone]
-          execute "SET TIME ZONE '#{options[:time_zone]}'"
+          execute("SET TIME ZONE '#{options[:time_zone]}'")
         else
-          execute "SET TIME ZONE interval '#{RDO::Util.system_time_zone}' hour to minute"
+          execute("SET TIME ZONE interval '#{RDO::Util.system_time_zone}' hour to minute")
         end
+      end
+
+      def set_encoding
+        execute("SET NAMES '#{encoding}'")
+      end
+
+      def encoding
+        options.fetch(:encoding, "utf-8")
       end
     end
   end

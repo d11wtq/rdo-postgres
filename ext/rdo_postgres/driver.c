@@ -27,6 +27,7 @@ static VALUE rdo_postgres_driver_allocate(VALUE klass) {
   driver->conn_ptr   = NULL;
   driver->is_open    = 0;
   driver->stmt_count = 0;
+  driver->encoding   = -1;
 
   VALUE self = Data_Wrap_Struct(klass, 0,
       rdo_postgres_driver_free, driver);
@@ -59,7 +60,9 @@ static VALUE rdo_postgres_driver_open(VALUE self) {
     PQsetNoticeProcessor(driver->conn_ptr, &rdo_postgres_driver_notice_processor, NULL);
     driver->is_open    = 1;
     driver->stmt_count = 0;
-    rb_funcall(self, rb_intern("set_time_zone"), 0);
+    driver->encoding   = rb_enc_find_index(
+        RSTRING_PTR(rb_funcall(self, rb_intern("encoding"), 0)));
+    rb_funcall(self, rb_intern("after_open"), 0);
   }
 
   return Qtrue;
@@ -74,6 +77,7 @@ static VALUE rdo_postgres_driver_close(VALUE self) {
   driver->conn_ptr   = NULL;
   driver->is_open    = 0;
   driver->stmt_count = 0;
+  driver->encoding   = -1;
 
   return Qtrue;
 }

@@ -235,4 +235,33 @@ describe RDO::Postgres::Driver do
       end
     end
   end
+
+  describe "string encoding" do
+    context "with utf-8" do
+      let(:options) { URI.parse(connection_uri).tap{|u| u.query = "encoding=utf-8"}.to_s }
+
+      it "returns utf-8 strings" do
+        connection.execute("SELECT 'foo'::text").first_value.encoding.should ==
+          Encoding.find("utf-8")
+      end
+    end
+
+    context "with iso-8859-1" do
+      let(:options) { URI.parse(connection_uri).tap{|u| u.query = "encoding=iso-8859-1"}.to_s }
+
+      it "returns iso-8859-1 strings" do
+        connection.execute("SELECT 'foo'::text").first_value.encoding.should ==
+          Encoding.find("iso-8859-1")
+      end
+    end
+
+    context "with latin1" do
+      let(:options) { URI.parse(connection_uri).tap{|u| u.query = "encoding=latin1"}.to_s }
+
+      it "returns ascii-8bit strings (ruby doesn't know this charset)" do
+        connection.execute("SELECT 'foo'::text").first_value.encoding.should ==
+          Encoding.find("binary")
+      end
+    end
+  end
 end

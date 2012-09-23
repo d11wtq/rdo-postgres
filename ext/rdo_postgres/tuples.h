@@ -12,7 +12,7 @@
 /**
  * Create a new RDO::Postgres::TupleList.
  */
-VALUE rdo_postgres_tuple_list_new(PGresult * res);
+VALUE rdo_postgres_tuple_list_new(PGresult * res, int encoding);
 
 /**
  * Called during driver initialization to define needed tuple classes.
