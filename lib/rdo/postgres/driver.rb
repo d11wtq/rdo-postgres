@@ -50,14 +50,14 @@ module RDO
 
       def set_time_zone
         if options[:time_zone]
-          execute("SET TIME ZONE '#{options[:time_zone]}'")
+          execute("SET TIME ZONE '#{quote(options[:time_zone])}'")
         else
-          execute("SET TIME ZONE interval '#{RDO::Util.system_time_zone}' hour to minute")
+          execute("SET TIME ZONE interval '#{quote(RDO::Util.system_time_zone)}' hour to minute")
         end
       end
 
       def set_encoding
-        execute("SET NAMES '#{encoding}'")
+        execute("SET NAMES '#{quote(encoding)}'")
       end
 
       def encoding
