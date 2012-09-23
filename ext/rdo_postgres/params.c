@@ -6,6 +6,7 @@
  */
 
 #include "params.h"
+#include <stdlib.h>
 #include <string.h>
 
 /** Get the strlen of the marker (e.g. $2) based on its index */

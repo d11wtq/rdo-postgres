@@ -18,6 +18,9 @@
  * --------------------------------------------------------------------------
  */
 
+#include <ruby.h>
+#include <ruby/encoding.h>
+
 /**
  * Convert a C string to a ruby String.
  *

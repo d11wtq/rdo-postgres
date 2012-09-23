@@ -7,6 +7,7 @@
 
 #include "tuples.h"
 #include "casts.h"
+#include <stdlib.h>
 
 /** Wrapper for the TupleList class */
 typedef struct {

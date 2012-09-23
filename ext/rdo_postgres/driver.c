@@ -8,7 +8,8 @@
 #include "driver.h"
 #include "statements.h"
 #include "macros.h"
-
+#include <ruby.h>
+#include <stdlib.h>
 #include <postgres.h>
 
 /** During GC, free any stranded connection */

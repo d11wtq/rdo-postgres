@@ -10,6 +10,7 @@
 #include "params.h"
 #include "tuples.h"
 #include "macros.h"
+#include <stdlib.h>
 #include <libpq-fe.h>
 #include <postgres.h>
 #include <catalog/pg_type.h>
@@ -192,8 +193,8 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
       executor->driver->conn_ptr,
       executor->stmt_name,
       argc,
-      values,
-      lengths,
+      (const char **) values,
+      (const int *) lengths,
       RDO_PG_TEXT_INPUT,
       RDO_PG_TEXT_OUTPUT);
 

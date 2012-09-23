@@ -5,6 +5,7 @@
  * See LICENSE file for details.
  */
 
+#include <stdlib.h>
 #include <ruby.h>
 #include "driver.h"
 
