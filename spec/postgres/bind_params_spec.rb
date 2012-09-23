@@ -454,4 +454,152 @@ describe RDO::Postgres::Driver, "bind parameter support" do
       end
     end
   end
+
+  describe "Time param" do
+    context "against a timestamp field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, created_at timestamp)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (created_at) VALUES (?) RETURNING *",
+          Time.new(2012, 9, 22, 5, 16, 58)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, created_at: DateTime.new(2012, 9, 22, 5, 16, 58, DateTime.now.zone)}
+      end
+    end
+
+    context "against a timestamptz field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, created_at timestamptz)" }
+
+      context "without a timezone given" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (created_at) VALUES (?) RETURNING *",
+            Time.new(2012, 9, 22, 5, 16, 58)
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, created_at: DateTime.new(2012, 9, 22, 5, 16, 58, DateTime.now.zone)}
+        end
+      end
+
+      context "with a timezone given" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (created_at) VALUES (?) RETURNING *",
+            Time.new(2012, 9, 22, 5, 16, 58, "-07:00")
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, created_at: DateTime.new(2012, 9, 22, 5, 16, 58, "-07:00")}
+        end
+      end
+    end
+
+    context "against a date field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, dob date)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (dob) VALUES (?) RETURNING *",
+          Time.new(1983, 5, 3, 6, 13, 0)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, dob: Date.new(1983, 5, 3)}
+      end
+    end
+
+    context "against a text field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, name text)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (name) VALUES (?) RETURNING *",
+          Time.new(2012, 9, 22, 5, 16, 58)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, name: Time.new(2012, 9, 22, 5, 16, 58).to_s}
+      end
+    end
+  end
+
+  describe "DateTime param" do
+    context "against a timestamp field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, created_at timestamp)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (created_at) VALUES (?) RETURNING *",
+          DateTime.new(1983, 5, 3, 6, 13, 0)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, created_at: DateTime.new(1983, 5, 3, 6, 13, 0, DateTime.now.zone)}
+      end
+    end
+
+    context "against a timestamptz field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, created_at timestamptz)" }
+
+      context "with a time zone given" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (created_at) VALUES (?) RETURNING *",
+            DateTime.new(1983, 5, 3, 6, 13, 0, "-07:00")
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, created_at: DateTime.new(1983, 5, 3, 6, 13, 0, "-07:00")}
+        end
+      end
+
+      context "without a time zone given" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (created_at) VALUES (?) RETURNING *",
+            DateTime.new(1983, 5, 3, 6, 13, 0)
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, created_at: DateTime.new(1983, 5, 3, 6, 13, 0)}
+        end
+      end
+    end
+
+    context "against a date field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, dob date)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (dob) VALUES (?) RETURNING *",
+          DateTime.new(1983, 5, 3, 6, 13, 0)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, dob: Date.new(1983, 5, 3)}
+      end
+    end
+
+    context "against a text field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, name text)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (name) VALUES (?) RETURNING *",
+          DateTime.new(1983, 5, 3, 6, 13, 0)
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, name: DateTime.new(1983, 5, 3, 6, 13, 0).to_s}
+      end
+    end
+  end
 end
