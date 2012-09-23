@@ -169,18 +169,23 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
   int    i;
 
   for (i = 0; i < argc; ++i) {
-    if (TYPE(args[i]) != T_STRING) {
-      args[i] = RDO_OBJ_TO_S(args[i]);
-    }
-
-    if (executor->param_types[i] == BYTEAOID) {
-      values[i] = PQescapeByteaConn(executor->driver->conn_ptr,
-          RSTRING_PTR(args[i]),
-          RSTRING_LEN(args[i]),
-          &(lengths[i]));
+    if (TYPE(args[i]) == T_NIL) {
+      values[i]  = NULL;
+      lengths[i] = 0;
     } else {
-      values[i]  = RSTRING_PTR(args[i]);
-      lengths[i] = RSTRING_LEN(args[i]);
+      if (TYPE(args[i]) != T_STRING) {
+        args[i] = RDO_OBJ_TO_S(args[i]);
+      }
+
+      if (executor->param_types[i] == BYTEAOID) {
+        values[i] = PQescapeByteaConn(executor->driver->conn_ptr,
+            RSTRING_PTR(args[i]),
+            RSTRING_LEN(args[i]),
+            &(lengths[i]));
+      } else {
+        values[i]  = RSTRING_PTR(args[i]);
+        lengths[i] = RSTRING_LEN(args[i]);
+      }
     }
   }
 

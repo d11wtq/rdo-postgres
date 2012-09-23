@@ -10,6 +10,9 @@
 #include <catalog/pg_type.h>
 #include "macros.h"
 
+/** Predicate test if the given string is formatted as \x0afe... */
+#define RDO_PG_NEW_HEX_P(s, len) (len >= 2 && s[0] == '\\' && s[1] == 'x')
+
 /** Lookup table for fast conversion of bytea hex strings to binary data */
 static char * RDOPostgres_HexLookup;
 
@@ -80,11 +83,10 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col) {
       return RDO_BOOL(value);
 
     case BYTEAOID:
-      if (RDO_PG_NEW_HEX_P(value, length)) {
+      if (RDO_PG_NEW_HEX_P(value, length))
         return rdo_postgres_cast_bytea_hex(value, length);
-      } else {
+      else
         return rdo_postgres_cast_bytea_escape(value, length);
-      }
 
     case DATEOID:
       return RDO_DATE(value);
