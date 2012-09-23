@@ -11,6 +11,13 @@
 #include "tuples.h"
 #include <libpq-fe.h>
 #include <postgres.h>
+#include <catalog/pg_type.h>
+
+/** I don't like magic numbers */
+#define RDO_PG_NO_OIDS 0
+#define RDO_PG_INFER_TYPES NULL
+#define RDO_PG_TEXT_INPUT NULL
+#define RDO_PG_TEXT_OUTPUT 0
 
 /** RDO::Postgres::StatementExecutor */
 static VALUE rdo_postgres_cStatementExecutor;
@@ -19,6 +26,8 @@ static VALUE rdo_postgres_cStatementExecutor;
 typedef struct {
   char              * stmt_name;
   char              * cmd;
+  int                 nparams;
+  Oid               * param_types;
   RDOPostgresDriver * driver;
 } RDOPostgresStatementExecutor;
 
@@ -27,6 +36,7 @@ static void rdo_postgres_statement_executor_free(
     RDOPostgresStatementExecutor * executor) {
   free(executor->stmt_name);
   free(executor->cmd);
+  free(executor->param_types);
   free(executor);
 }
 
@@ -42,11 +52,6 @@ static VALUE rdo_postgres_result_info_new(PGresult * res) {
   return info;
 }
 
-#define RDO_PG_NO_OIDS 0
-#define RDO_PG_INFER_TYPES NULL
-#define RDO_PG_TEXT_INPUT NULL
-#define RDO_PG_TEXT_OUTPUT 0
-
 /** Actually issue the PQprepare() command */
 static void rdo_postgres_statement_executor_prepare(VALUE self) {
   RDOPostgresStatementExecutor * executor;
@@ -57,9 +62,11 @@ static void rdo_postgres_statement_executor_prepare(VALUE self) {
         "Unable to prepare statement: connection is not open");
   }
 
-  char * cmd = rdo_postgres_params_inject_markers(executor->cmd);
+  char           * cmd = rdo_postgres_params_inject_markers(executor->cmd);
+  PGresult       * res;
+  ExecStatusType   status;
 
-  PGresult * res = PQprepare(
+  res = PQprepare(
       executor->driver->conn_ptr,
       executor->stmt_name,
       cmd,
@@ -68,14 +75,37 @@ static void rdo_postgres_statement_executor_prepare(VALUE self) {
 
   free(cmd);
 
-  ExecStatusType status = PQresultStatus(res);
+  status = PQresultStatus(res);
+
+  if (status != PGRES_BAD_RESPONSE && status != PGRES_FATAL_ERROR) {
+    PQclear(res);
+  } else {
+    char msg[sizeof(char) * (strlen(PQresultErrorMessage(res)) + 1)];
+    strcpy(msg, PQresultErrorMessage(res));
+    PQclear(res);
+    rb_raise(rb_path2class("RDO::Exception"),
+        "Failed to prepare statement: %s", msg);
+  }
+
+  res = PQdescribePrepared(executor->driver->conn_ptr, executor->stmt_name);
+
+  if (status != PGRES_COMMAND_OK) {
+    char msg[sizeof(char) * (strlen(PQresultErrorMessage(res)) + 1)];
+    strcpy(msg, PQresultErrorMessage(res));
+    PQclear(res);
+    rb_raise(rb_path2class("RDO::Exception"),
+        "Failed to prepare statement: %s", msg);
+  }
+
+  executor->nparams     = PQnparams(res);
+  executor->param_types = malloc(sizeof(Oid) * executor->nparams);
+
+  int i = 0;
+  for (; i < executor->nparams; ++i) {
+    executor->param_types[i] = PQparamtype(res, i);
+  }
 
   PQclear(res);
-
-  if (status == PGRES_BAD_RESPONSE || status == PGRES_FATAL_ERROR) {
-    rb_raise(rb_path2class("RDO::Exception"),
-        "Failed to prepare statement: %s", PQresultErrorMessage(res));
-  }
 }
 
 /** Factory method to return a new StatementExecutor */
@@ -87,8 +117,10 @@ VALUE rdo_postgres_statement_executor_new(VALUE driver, VALUE cmd, VALUE name) {
     malloc(sizeof(RDOPostgresStatementExecutor));
 
   Data_Get_Struct(driver, RDOPostgresDriver, executor->driver);
-  executor->stmt_name = strdup(RSTRING_PTR(name));
-  executor->cmd       = strdup(RSTRING_PTR(cmd));
+  executor->stmt_name   = strdup(RSTRING_PTR(name));
+  executor->cmd         = strdup(RSTRING_PTR(cmd));
+  executor->nparams     = 0;
+  executor->param_types = NULL;
 
   VALUE self = Data_Wrap_Struct(rdo_postgres_cStatementExecutor, 0,
       rdo_postgres_statement_executor_free, executor);
@@ -112,7 +144,7 @@ static VALUE rdo_postgres_statement_executor_command(VALUE self) {
   return rb_str_new2(executor->cmd);
 }
 
-/** Execute the prepared statement and return a Result */
+/** Execute with PQexecPrepared() and return a Result */
 static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
     VALUE self) {
 
@@ -124,18 +156,28 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
         "Unable to execute statement: connection is not open");
   }
 
+  if (argc != executor->nparams) {
+    rb_raise(rb_path2class("RDO::Exception"),
+        "Bind parameter count mismatch: wanted %i, got %i",
+        executor->nparams, argc);
+  }
+
   char * values[argc];
-  int    lengths[argc];
+  size_t lengths[argc];
+  int    i;
 
-  char * cstr;
-  int    i = 0;
-
-  for (; i < argc; ++i) {
+  for (i = 0; i < argc; ++i) {
     Check_Type(args[i], T_STRING);
-    cstr = RSTRING_PTR(args[i]);
 
-    values[i]  = cstr;
-    lengths[i] = strlen(cstr);
+    if (executor->param_types[i] == BYTEAOID) {
+      values[i] = PQescapeByteaConn(executor->driver->conn_ptr,
+          RSTRING_PTR(args[i]),
+          RSTRING_LEN(args[i]),
+          &(lengths[i]));
+    } else {
+      values[i]  = RSTRING_PTR(args[i]);
+      lengths[i] = RSTRING_LEN(args[i]);
+    }
   }
 
   PGresult * res = PQexecPrepared(
