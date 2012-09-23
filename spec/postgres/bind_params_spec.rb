@@ -335,4 +335,65 @@ describe RDO::Postgres::Driver, "bind parameter support" do
       end
     end
   end
+
+  describe "BigDecimal param" do
+    context "against a decimal field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, score decimal)" }
+
+      context "when it is NaN" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (score) VALUES (?) RETURNING *",
+            BigDecimal("NaN")
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple[:score].should be_a_kind_of(BigDecimal)
+          tuple[:score].should be_nan
+        end
+      end
+
+      context "when it is a real number" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (score) VALUES (?) RETURNING *",
+            BigDecimal("12.2")
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, score: BigDecimal("12.2")}
+        end
+      end
+    end
+
+    context "against a text field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, name text)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (name) VALUES (?) RETURNING *",
+          BigDecimal("12.7")
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, name: BigDecimal("12.7").to_s}
+      end
+    end
+
+    context "against a float field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, score float)" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (score) VALUES (?) RETURNING *",
+          BigDecimal("12.7")
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, score: 12.7}
+      end
+    end
+  end
 end
