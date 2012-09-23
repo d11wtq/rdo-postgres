@@ -105,7 +105,7 @@ describe RDO::Postgres::Connection do
         connection.execute("CREATE SCHEMA rdo_test")
         connection.execute("SET search_path = rdo_test")
         connection.execute(
-          "CREATE TABLE users (id serial primary key, name text, salt bytea)"
+          "CREATE TABLE users (id serial primary key, name text)"
         )
       end
 
@@ -211,6 +211,26 @@ describe RDO::Postgres::Connection do
           rows = []
           result.each{|row| rows << row }
           rows.should == [{id: 1, name: "bob"}, {id: 2, name: "barry"}]
+        end
+
+        context "using bind parameters" do
+          let(:result) do
+            connection.execute("SELECT * FROM users WHERE name = ?", "barry")
+          end
+
+          it "returns a RDO::Result" do
+            result.should be_a_kind_of(RDO::Result)
+          end
+
+          it "provides the correct count" do
+            result.count.should == 1
+          end
+
+          it "allows enumeration of the rows" do
+            rows = []
+            result.each{|row| rows << row}
+            rows.should == [{id: 2, name: "barry"}]
+          end
         end
       end
     end
