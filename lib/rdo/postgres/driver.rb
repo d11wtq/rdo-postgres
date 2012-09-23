@@ -13,6 +13,20 @@ module RDO
     class Driver < RDO::Driver
       # implementation defined by C extension
 
+      # Internally this driver uses prepared statements.
+      #
+      # @param [String] stmt
+      #   the statement to execute
+      #
+      # @param [Object...] *args
+      #   bind parameters to execute with
+      #
+      # @return [RDO::Result]
+      #   a result containing any tuples and query info
+      def execute(stmt, *args)
+        prepare(stmt).execute(*args)
+      end
+
       private
 
       # Passed to PQconnectdb().
