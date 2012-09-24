@@ -13,6 +13,6 @@ require "rdo/postgres/driver"
 require "rdo_postgres/rdo_postgres"
 
 # Register name variants for postgresql schemes
-%w[postgres postgresql].each do |name|
+%w[postgres postgresql pgsql psql].each do |name|
   RDO::Connection.register_driver(name, RDO::Postgres::Driver)
 end
