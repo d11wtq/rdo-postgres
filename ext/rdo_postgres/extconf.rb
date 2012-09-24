@@ -20,13 +20,13 @@ def have_build_env
 end
 
 dir_config(
-  "pgsql-server",
+  "postgres",
   config_value("includedir-server"),
   config_value("libdir")
 )
 
 dir_config(
-  "pgsql-client",
+  "libpq",
   config_value("includedir"),
   config_value("libdir")
 )

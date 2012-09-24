@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.authors       = ["d11wtq"]
   gem.email         = ["chris@w3style.co.uk"]
   gem.description   = "Provides access to PostgreSQL using the RDO interface"
-  gem.summary       = "PostgreSQL Adapter for RDO"
+  gem.summary       = "PostgreSQL Driver for RDO"
   gem.homepage      = "https://github.com/d11wtq/rdo-postgres"
 
   gem.files         = `git ls-files`.split($\)

@@ -1,5 +1,5 @@
 /*
- * RDO Postgres Driver.
+ * RDO—Ruby Data Objects.
  * Copyright © 2012 Chris Corbyn.
  *
  * See LICENSE file for details.
