@@ -3,7 +3,7 @@ require "rspec/core/rake_task"
 require "rake/extensiontask"
 
 Rake::ExtensionTask.new('rdo_postgres') do |ext|
-  ext.lib_dir = File.join('lib', 'rdo')
+  ext.lib_dir = File.join('lib', 'rdo_postgres')
 end
 
 desc "Run the full RSpec suite"
