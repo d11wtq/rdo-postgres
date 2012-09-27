@@ -207,6 +207,7 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
   ExecStatusType status = PQresultStatus(res);
 
   if (status == PGRES_BAD_RESPONSE || status == PGRES_FATAL_ERROR) {
+    PQclear(res);
     rb_raise(rb_path2class("RDO::Exception"),
         "Failed to execute statement: %s", PQresultErrorMessage(res));
   }
