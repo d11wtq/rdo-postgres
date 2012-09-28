@@ -1,4 +1,5 @@
 require "spec_helper"
+require "rational"
 
 describe RDO::Postgres::Driver, "type casting" do
   let(:options)    { connection_uri }
@@ -248,15 +249,15 @@ describe RDO::Postgres::Driver, "type casting" do
     context "with a time zone" do
       let(:sql) { "SELECT '2012-09-22 04:26:34'::timestamptz" }
 
-      it "returns a DateTime, in the server's time zone" do
+      it "returns a DateTime, in the system time zone" do
         value.should == DateTime.new(2012, 9, 22, 4, 26, 34, DateTime.now.zone)
       end
 
       context "specifying an alternate time zone" do
-        let(:sql) { "SELECT '2012-09-22 04:26:34'::timestamptz at time zone 'UTC'" }
+        let(:sql) { "SELECT '2012-09-22 04:26:34'::timestamp at time zone 'UTC'" }
 
-        it "returns a DateTime at the given time zone" do
-          value.should == DateTime.new(2012, 9, 21, 18, 26, 34, DateTime.now.zone)
+        it "returns a DateTime at the system time zone" do
+          value.should == DateTime.new(2012, 9, 22, 4, 26, 34, 0).new_offset(Time.now.utc_offset)
         end
       end
 
@@ -264,7 +265,7 @@ describe RDO::Postgres::Driver, "type casting" do
         before(:each) { connection.execute("SET timezone = 'UTC'") }
 
         it "returns a DateTime with the conversion done accordingly" do
-          value.should == DateTime.new(2012, 9, 22, 14, 26, 34, DateTime.now.zone)
+          value.should == DateTime.new(2012, 9, 22, 4, 26, 34, 0)
         end
       end
     end
