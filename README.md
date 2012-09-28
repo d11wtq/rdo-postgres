@@ -3,6 +3,8 @@
 This is the PostgreSQL driver for [RDO—Ruby Data Objects]
 (https://github.com/d11wtq/rdo).
 
+[![Build Status](https://secure.travis-ci.org/d11wtq/rdo-postgres.png?branch=master)](http://travis-ci.org/d11wtq/rdo-postgres)
+
 Refer to the RDO project [README](https://github.com/d11wtq/rdo) for usage
 information.
 
