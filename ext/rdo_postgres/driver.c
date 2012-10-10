@@ -105,8 +105,7 @@ static VALUE rdo_postgres_driver_prepare(VALUE self, VALUE cmd) {
   char name[32];
   sprintf(name, "rdo_stmt_%i", ++driver->stmt_count);
 
-  return RDO_STATEMENT(rdo_postgres_statement_executor_new(
-        self, cmd, rb_str_new2(name)));
+  return rdo_postgres_statement_executor_new(self, cmd, rb_str_new2(name));
 }
 
 /** Quote a string literal for safe insertion in a statement */

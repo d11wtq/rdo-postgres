@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.version       = RDO::Postgres::VERSION
   gem.extensions    = ["ext/rdo_postgres/extconf.rb"]
 
-  gem.add_runtime_dependency "rdo", ">= 0.0.1"
+  gem.add_runtime_dependency "rdo", "~> 0.1"
 
   gem.add_development_dependency "rspec"
   gem.add_development_dependency "rake-compiler"

@@ -472,31 +472,15 @@ describe RDO::Postgres::Driver, "bind parameter support" do
 
     context "against a timestamptz field" do
       let(:table) { "CREATE TABLE test (id serial primary key, created_at timestamptz)" }
-
-      context "without a timezone given" do
-        let(:tuple) do
-          connection.execute(
-            "INSERT INTO test (created_at) VALUES (?) RETURNING *",
-            Time.new(2012, 9, 22, 5, 16, 58)
-          ).first
-        end
-
-        it "is inferred correctly" do
-          tuple.should == {id: 1, created_at: DateTime.new(2012, 9, 22, 5, 16, 58, DateTime.now.zone)}
-        end
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (created_at) VALUES (?) RETURNING *",
+          Time.new(2012, 9, 22, 5, 16, 58, "-07:00")
+        ).first
       end
 
-      context "with a timezone given" do
-        let(:tuple) do
-          connection.execute(
-            "INSERT INTO test (created_at) VALUES (?) RETURNING *",
-            Time.new(2012, 9, 22, 5, 16, 58, "-07:00")
-          ).first
-        end
-
-        it "is inferred correctly" do
-          tuple.should == {id: 1, created_at: DateTime.new(2012, 9, 22, 5, 16, 58, "-07:00")}
-        end
+      it "is inferred correctly" do
+        tuple.should == {id: 1, created_at: DateTime.new(2012, 9, 22, 5, 16, 58, "-07:00")}
       end
     end
 
@@ -732,7 +716,7 @@ describe RDO::Postgres::Driver, "bind parameter support" do
     end
 
     let(:tuple) do
-      connection.execute(<<-SQL, "bob", 17, false, Time.new(2012, 9, 22, 6, 34)).first
+      connection.execute(<<-SQL, "bob", 17, false, Time.new(2012, 9, 22, 6, 34, 0, "-07:00")).first
       INSERT INTO test (
         name, age, admin, created_at
       ) VALUES (
@@ -747,7 +731,7 @@ describe RDO::Postgres::Driver, "bind parameter support" do
         name:       "bob",
         age:        17,
         admin:      false,
-        created_at: DateTime.new(2012, 9, 22, 6, 34, 0, DateTime.now.zone)
+        created_at: DateTime.new(2012, 9, 22, 6, 34, 0, "-07:00")
       }
     end
   end
