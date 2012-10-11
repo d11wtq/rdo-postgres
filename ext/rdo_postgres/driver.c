@@ -124,7 +124,7 @@ static VALUE rdo_postgres_driver_quote(VALUE self, VALUE str) {
         "Unable to quote string: connection is not open");
   }
 
-  char * quoted = malloc(sizeof(char) * RSTRING_LEN(str) * 4);
+  char * quoted = malloc(sizeof(char) * RSTRING_LEN(str) * 2 + 1);
   PQescapeStringConn(driver->conn_ptr, quoted,
       RSTRING_PTR(str), RSTRING_LEN(str), NULL);
 

@@ -8,6 +8,7 @@
 #include "params.h"
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 /** Get the strlen of the marker (e.g. $2) based on its index */
 #define RDO_PG_MARKER_LEN(n) (n >= 100 ? 4 : (n >= 10 ? 3 : 2))
@@ -20,7 +21,8 @@
  * This function is deliberately not broken apart, since it needs to be extremely fast.
  */
 char * rdo_postgres_params_inject_markers(char * stmt) {
-  char * buf     = malloc(sizeof(char) * strlen(stmt) * 4);
+  int    len     = strlen(stmt);
+  char * buf     = malloc(sizeof(char) * len ? (len * (floor(log(len)) + 2)) : 0);
   char * s       = stmt;
   char * b       = buf;
   int    n       = 0;
