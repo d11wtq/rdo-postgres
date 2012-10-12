@@ -8,9 +8,8 @@ This is the PostgreSQL driver for [RDO—Ruby Data Objects]
 Refer to the RDO project [README](https://github.com/d11wtq/rdo) for usage
 information.
 
-This driver cannot be used with Postgres versions older than 7.4, since the
-protocol has changed and this driver takes advantage of newer protocol (3.0)
-features.
+This driver cannot be used with PostgreSQL versions older than 7.4. Those
+versions are no longer supported by PostgreSQL in any case.
 
 ## Installation
 
@@ -72,16 +71,12 @@ conn.execute("SELECT * FROM users WHERE banned = $1 AND created_at > ?", true, 1
 
 ## Contributing
 
-Contributions to support older versions of PostgreSQL (< 7.4) welcomed,
-though if the changes required break the native support for newer versions
-pull requests will not be accepted. It is possible to write a separate
-driver for older versions of PostgreSQL and register it under the driver
-name 'postgresql' instead of this one if that is preferable. Alternatively,
-use an explicit name that indicates legacy compatibility, such as
-'postgres73'.
-
 If you find any bugs, please send a pull request if you think you can
 fix it, or file in an issue in the issue tracker.
+
+I'm particulary interested in patches surrounding support for built-in type
+arrays, multi-dimensional arrays and arrays of custom types, such as ENUMs
+(in order of difficulty/preference).
 
 When sending pull requests, please use topic branches—don't send a pull
 request from the master branch of your fork, as that may change
