@@ -270,4 +270,12 @@ describe RDO::Postgres::Driver, "type casting" do
       end
     end
   end
+
+  describe "integer[] cast" do
+    let(:sql) { "SELECT ARRAY[10::integer, 24::integer, 101::integer]" }
+
+    it "returns an Array of Fixnums" do
+      value.should == [10, 24, 101]
+    end
+  end
 end

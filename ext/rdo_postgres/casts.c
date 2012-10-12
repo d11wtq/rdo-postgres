@@ -14,6 +14,25 @@
 /** Predicate test if the given string is formatted as \x0afe... */
 #define RDO_PG_NEW_HEX_P(s, len) (len >= 2 && s[0] == '\\' && s[1] == 'x')
 
+/**
+ * Use the given parsing method to convert an internal C string to a Ruby type.
+ *
+ * @param (char *) typemethod
+ *   the name of the Util module method (without the parse_ prefix)
+ *
+ * @param (char *) s
+ *   the C string
+ *
+ * @param (int) len
+ *   the length of the C string
+ *
+ * @return VALUE
+ *   a Ruby type
+ */
+#define RDO_PG_PARSE(typemethod, s, len) \
+  (rb_funcall(rb_path2class("RDO::Postgres::Util"), \
+              rb_intern("parse_" typemethod), 1, RDO_BINARY_STRING(s, len)))
+
 /** Lookup table for fast conversion of bytea hex strings to binary data */
 static char * RDOPostgres_HexLookup;
 
@@ -103,6 +122,9 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
     case VARCHAROID:
     case BPCHAROID:
       return RDO_STRING(value, length, enc);
+
+    case INT4ARRAYOID:
+      return RDO_PG_PARSE("int_array", value, length);
 
     default:
       return RDO_BINARY_STRING(value, length);
