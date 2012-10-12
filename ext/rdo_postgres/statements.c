@@ -60,8 +60,7 @@ static void rdo_postgres_statement_executor_prepare(VALUE self) {
   Data_Get_Struct(self, RDOPostgresStatementExecutor, executor);
 
   if (!(executor->driver->is_open)) {
-    rb_raise(rb_path2class("RDO::Exception"),
-        "Unable to prepare statement: connection is not open");
+    RDO_ERROR("Unable to prepare statement: connection is not open");
   }
 
   char           * cmd = rdo_postgres_params_inject_markers(executor->cmd);
@@ -85,8 +84,7 @@ static void rdo_postgres_statement_executor_prepare(VALUE self) {
     char msg[sizeof(char) * (strlen(PQresultErrorMessage(res)) + 1)];
     strcpy(msg, PQresultErrorMessage(res));
     PQclear(res);
-    rb_raise(rb_path2class("RDO::Exception"),
-        "Failed to prepare statement: %s", msg);
+    RDO_ERROR("Failed to prepare statement: %s", msg);
   }
 
   res = PQdescribePrepared(executor->driver->conn_ptr, executor->stmt_name);
@@ -95,8 +93,7 @@ static void rdo_postgres_statement_executor_prepare(VALUE self) {
     char msg[sizeof(char) * (strlen(PQresultErrorMessage(res)) + 1)];
     strcpy(msg, PQresultErrorMessage(res));
     PQclear(res);
-    rb_raise(rb_path2class("RDO::Exception"),
-        "Failed to prepare statement: %s", msg);
+    RDO_ERROR("Failed to prepare statement: %s", msg);
   }
 
   executor->nparams     = PQnparams(res);
@@ -154,12 +151,11 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
   Data_Get_Struct(self, RDOPostgresStatementExecutor, executor);
 
   if (!(executor->driver->is_open)) {
-    rb_raise(rb_path2class("RDO::Exception"),
-        "Unable to execute statement: connection is not open");
+    RDO_ERROR("Unable to execute statement: connection is not open");
   }
 
   if (argc != executor->nparams) {
-    rb_raise(rb_path2class("RDO::Exception"),
+    rb_raise(rb_eArgError,
         "Bind parameter count mismatch: wanted %i, got %i",
         executor->nparams, argc);
   }
@@ -208,13 +204,10 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
 
   if (status == PGRES_BAD_RESPONSE || status == PGRES_FATAL_ERROR) {
     PQclear(res);
-    rb_raise(rb_path2class("RDO::Exception"),
-        "Failed to execute statement: %s", PQresultErrorMessage(res));
+    RDO_ERROR("Failed to execute statement: %s", PQresultErrorMessage(res));
   }
 
-  return rb_funcall(rb_path2class("RDO::Result"),
-      rb_intern("new"), 2,
-      rdo_postgres_tuple_list_new(res, executor->driver->encoding),
+  return RDO_RESULT(rdo_postgres_tuple_list_new(res, executor->driver->encoding),
       rdo_postgres_result_info_new(res));
 }
 

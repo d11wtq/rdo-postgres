@@ -49,12 +49,10 @@ static VALUE rdo_postgres_driver_open(VALUE self) {
       RSTRING_PTR(rb_funcall(self, rb_intern("connect_db_string"), 0)));
 
   if (driver->conn_ptr == NULL || PQstatus(driver->conn_ptr) == CONNECTION_BAD) {
-    rb_raise(rb_path2class("RDO::Exception"),
-        "PostgreSQL connection failed: %s",
+    RDO_ERROR("PostgreSQL connection failed: %s",
         PQerrorMessage(driver->conn_ptr));
   } else if (PQprotocolVersion(driver->conn_ptr) < 3) {
-    rb_raise(rb_path2class("RDO::Exception"),
-        "rdo-postgres requires PostgreSQL protocol version >= 3 (using %u). "
+    RDO_ERROR("rdo-postgres requires PostgreSQL protocol version >= 3 (using %u). "
         "PostgreSQL >= 7.4 required.",
         PQprotocolVersion(driver->conn_ptr));
   } else {
@@ -98,8 +96,7 @@ static VALUE rdo_postgres_driver_prepare(VALUE self, VALUE cmd) {
   Data_Get_Struct(self, RDOPostgresDriver, driver);
 
   if (!(driver->is_open)) {
-    rb_raise(rb_path2class("RDO::Exception"),
-        "Unable to prepare statement: connection is not open");
+    RDO_ERROR("Unable to prepare statement: connection is not open");
   }
 
   char name[32];
@@ -120,8 +117,7 @@ static VALUE rdo_postgres_driver_quote(VALUE self, VALUE str) {
   Data_Get_Struct(self, RDOPostgresDriver, driver);
 
   if (!(driver->is_open)) {
-    rb_raise(rb_path2class("RDO::Exception"),
-        "Unable to quote string: connection is not open");
+    RDO_ERROR("Unable to quote string: connection is not open");
   }
 
   char * quoted = malloc(sizeof(char) * RSTRING_LEN(str) * 2 + 1);
