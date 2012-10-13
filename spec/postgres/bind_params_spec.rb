@@ -760,6 +760,33 @@ describe RDO::Postgres::Driver, "bind parameter support" do
         end
       end
     end
+
+    context "against an bytea[] field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, salts bytea[])" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (salts) VALUES (?) RETURNING *",
+          ["\x00\x11", "\x22\x33"]
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, salts: ["\x00\x11", "\x22\x33"]}
+      end
+
+      context "with embedded nils" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (salts) VALUES (?) RETURNING *",
+            ["\x00\x11", nil]
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, salts: ["\x00\x11", nil]}
+        end
+      end
+    end
   end
 
   describe "arbitrary Object param" do

@@ -21,8 +21,8 @@
 #define RDO_PG_TEXT_OUTPUT 0
 
 /** Wrap a Ruby Array with a RDO::Postgres::Array */
-#define RDO_PG_WRAP_ARRAY(a) \
-  (rb_funcall(rb_path2class("RDO::Postgres::Array"), \
+#define RDO_PG_WRAP_ARRAY(clsname, a) \
+  (rb_funcall(rb_path2class("RDO::Postgres::Array::" clsname), \
               rb_intern("new"), 1, a))
 
 /** RDO::Postgres::StatementExecutor */
@@ -174,7 +174,11 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
       lengths[i] = 0;
     } else {
       if (TYPE(args[i]) == T_ARRAY) {
-        args[i] = RDO_PG_WRAP_ARRAY(args[i]);
+        if (executor->param_types[i] == RDO_PG_BYTEAARRAYOID) {
+          args[i] = RDO_PG_WRAP_ARRAY("Bytea", args[i]);
+        } else {
+          args[i] = RDO_PG_WRAP_ARRAY("Text", args[i]);
+        }
       }
 
       if (TYPE(args[i]) != T_STRING) {
