@@ -20,12 +20,27 @@ module RDO
     #   RDO::Postgres::Array.parse('{"John Smith","Sarah Doe"}').to_a
     #   # => ["John Smith", "Sarah Doe"]
     class Array < ::Array
+      class << self
+        # Read a PostgreSQL array in its string form.
+        #
+        # @param [String] str
+        #   an array string from postgresql
+        #
+        # @return [Array]
+        #   a Ruby Array for this string
+        def parse(str)
+          new.tap do |a|
+            a.replace(str[1...-1].split(",").map(&a.method(:parse_value_or_null)))
+          end
+        end
+      end
+
       # Convert the Array to the format used by PostgreSQL.
       #
       # @return [String]
       #   a postgresql array string
       def to_s
-        "{#{map(&method(:format_value)).join(",")}}"
+        "{#{map(&method(:format_value_or_null)).join(",")}}"
       end
 
       # Format an individual element in the Array for building into a String.
@@ -38,8 +53,6 @@ module RDO
       # @return [String]
       #   a String used to build the formatted array
       def format_value(v)
-        return "NULL" if v.nil?
-
         %Q{"#{v.to_s.gsub('\\', '\\\\\\\\').gsub('"', '\\\\"')}"}
       end
 
@@ -54,28 +67,17 @@ module RDO
       # @return [Object]
       #   the Ruby value
       def parse_value(s)
-        return nil if s == "NULL"
-
-        if s[0] == '"'
-          s[1...-1].gsub(/\\(.)/, "\\1")
-        else
-          s
-        end
+        s[0] == '"' ? s[1...-1].gsub(/\\(.)/, "\\1") : s
       end
 
-      class << self
-        # Read a PostgreSQL array in its string form.
-        #
-        # @param [String] str
-        #   an array string from postgresql
-        #
-        # @return [Array]
-        #   a Ruby Array for this string
-        def parse(str)
-          new.tap do |a|
-            a.replace(str[1...-1].split(",").map(&a.method(:parse_value)))
-          end
-        end
+      private
+
+      def format_value_or_null(v)
+        v.nil? ? "NULL" : format_value(v)
+      end
+
+      def parse_value_or_null(s)
+        s == "NULL" ? nil : parse_value(s)
       end
     end
   end

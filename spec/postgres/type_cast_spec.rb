@@ -302,4 +302,20 @@ describe RDO::Postgres::Driver, "type casting" do
       end
     end
   end
+
+  describe "integer[] cast" do
+    let(:sql) { "SELECT ARRAY[42, 7]::integer[]" }
+
+    it "returns an Array of Fixnums" do
+      value.should == [42, 7]
+    end
+
+    context "including NULLs" do
+      let(:sql) { "SELECT ARRAY[NULL, 7]::integer[]" }
+
+      it "returns an Array including nil" do
+        value.should == [nil, 7]
+      end
+    end
+  end
 end

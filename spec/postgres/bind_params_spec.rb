@@ -739,6 +739,27 @@ describe RDO::Postgres::Driver, "bind parameter support" do
         end
       end
     end
+
+    context "against an integer[] field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, days integer[])" }
+      let(:tuple) do
+        connection.execute("INSERT INTO test (days) VALUES (?) RETURNING *", [4, 11]).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, days: [4, 11]}
+      end
+
+      context "with embedded nils" do
+        let(:tuple) do
+          connection.execute("INSERT INTO test (days) VALUES (?) RETURNING *", [4, nil]).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, days: [4, nil]}
+        end
+      end
+    end
   end
 
   describe "arbitrary Object param" do
