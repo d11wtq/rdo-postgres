@@ -6,9 +6,12 @@
 ##
 
 require "rdo"
+
 require "rdo/postgres/version"
 require "rdo/postgres/driver"
+
 require "rdo/postgres/array"
+require "rdo/postgres/array/text"
 
 # c extension
 require "rdo_postgres/rdo_postgres"

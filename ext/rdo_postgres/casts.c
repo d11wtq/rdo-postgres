@@ -14,6 +14,12 @@
 /** Predicate test if the given string is formatted as \x0afe... */
 #define RDO_PG_NEW_HEX_P(s, len) (len >= 2 && s[0] == '\\' && s[1] == 'x')
 
+/** Parse a PostgreSQL array and return an Array for the given type */
+#define RDO_PG_ARRAY(clsname, s, len) \
+  (rb_funcall((rb_funcall(rb_path2class("RDO::Postgres::Array::" clsname), \
+                          rb_intern("parse"), 1, rb_str_new(s, len))), \
+              rb_intern("to_a"), 0))
+
 /** Lookup table for fast conversion of bytea hex strings to binary data */
 static char * RDOPostgres_HexLookup;
 
@@ -103,6 +109,9 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
     case VARCHAROID:
     case BPCHAROID:
       return RDO_STRING(value, length, enc);
+
+    case TEXTARRAYOID:
+      return RDO_PG_ARRAY("Text", value, length);
 
     default:
       return RDO_BINARY_STRING(value, length);

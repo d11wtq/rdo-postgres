@@ -270,4 +270,36 @@ describe RDO::Postgres::Driver, "type casting" do
       end
     end
   end
+
+  describe "text[] cast" do
+    let(:sql) { "SELECT ARRAY['a', 'b']::text[]" }
+
+    it "returns an Array of Strings" do
+      value.should == ["a", "b"]
+    end
+
+    context "including quotes" do
+      let(:sql) { %q{SELECT ARRAY['a "b"', '"c" d']::text[]} }
+
+      it "returns an Array of Strings" do
+        value.should == ['a "b"', '"c" d']
+      end
+    end
+
+    context "including backslashes" do
+      let(:sql) { %q{SELECT ARRAY['a \\b', '\\c d']::text[]} }
+
+      it "returns an Array of Strings" do
+        value.should == ['a \\b', '\\c d']
+      end
+    end
+
+    context "including NULLs" do
+      let(:sql) { "SELECT ARRAY[NULL, 'b']::text[]" }
+
+      it "returns an Array including nil" do
+        value.should == [nil, "b"]
+      end
+    end
+  end
 end
