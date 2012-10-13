@@ -21,6 +21,11 @@
 #define RDO_PG_TEXT_INPUT NULL
 #define RDO_PG_TEXT_OUTPUT 0
 
+/** Wrap a Ruby Array with a RDO::Postgres::Array */
+#define RDO_PG_WRAP_ARRAY(a) \
+  (rb_funcall(rb_path2class("RDO::Postgres::Array"), \
+              rb_intern("new"), 1, a))
+
 /** RDO::Postgres::StatementExecutor */
 static VALUE rdo_postgres_cStatementExecutor;
 
@@ -169,6 +174,10 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
       values[i]  = NULL;
       lengths[i] = 0;
     } else {
+      if (TYPE(args[i]) == T_ARRAY) {
+        args[i] = RDO_PG_WRAP_ARRAY(args[i]);
+      }
+
       if (TYPE(args[i]) != T_STRING) {
         args[i] = RDO_OBJ_TO_S(args[i]);
       }

@@ -688,6 +688,59 @@ describe RDO::Postgres::Driver, "bind parameter support" do
     end
   end
 
+  describe "Array param" do
+    context "against a text[] field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, words text[])" }
+      let(:tuple) do
+        connection.execute("INSERT INTO test (words) VALUES (?) RETURNING *", ["apple", "orange"]).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, words: ["apple", "orange"]}
+      end
+
+      context "with embeddded quotes" do
+        let(:tuple) do
+          connection.execute("INSERT INTO test (words) VALUES (?) RETURNING *", ['"apple"']).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, words: ['"apple"']}
+        end
+      end
+
+      context "with embeddded backslashes" do
+        let(:tuple) do
+          connection.execute("INSERT INTO test (words) VALUES (?) RETURNING *", ['\\apple']).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, words: ['\\apple']}
+        end
+      end
+
+      context "with embedded nils" do
+        let(:tuple) do
+          connection.execute("INSERT INTO test (words) VALUES (?) RETURNING *", ["apple", nil]).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, words: ["apple", nil]}
+        end
+      end
+
+      context "with embedded new lines" do
+        let(:tuple) do
+          connection.execute("INSERT INTO test (words) VALUES (?) RETURNING *", ["apple\norange"]).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, words: ["apple\norange"]}
+        end
+      end
+    end
+  end
+
   describe "arbitrary Object param" do
     context "against a text field" do
       let(:value) { Object.new }
