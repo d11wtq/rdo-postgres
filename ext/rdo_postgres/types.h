@@ -42,14 +42,10 @@
 #define RDO_PG_VARCHAROID 1043
 #define RDO_PG_BPCHAROID  1042
 
-// text[]
-#define RDO_PG_TEXTARRAYOID 1009
-
-// char[]
-#define RDO_PG_CHARARRAYOID   1002
-#define RDO_PG_BPCHARARRAYOID 1014
-
-// varchar[]
+// text[]/char[]
+#define RDO_PG_TEXTARRAYOID    1009
+#define RDO_PG_CHARARRAYOID    1002
+#define RDO_PG_BPCHARARRAYOID  1014
 #define RDO_PG_VARCHARARRAYOID 1015
 
 // integer[]
@@ -60,6 +56,9 @@
 // float[]
 #define RDO_PG_FLOAT4ARRAYOID 1021
 #define RDO_PG_FLOAT8ARRAYOID 1022
+
+// boolean[]
+#define RDO_PG_BOOLARRAYOID 1000
 
 // bytea[]
 #define RDO_PG_BYTEAARRAYOID 1001

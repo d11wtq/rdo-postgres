@@ -399,6 +399,22 @@ describe RDO::Postgres::Driver, "type casting" do
     end
   end
 
+  describe "boolean[] cast" do
+    let(:sql) { "SELECT ARRAY['t', 'f']::boolean[]" }
+
+    it "returns an Array of Booleans" do
+      value.should == [true, false]
+    end
+
+    context "including NULLs" do
+      let(:sql) { "SELECT ARRAY[NULL, 't']::boolean[]" }
+
+      it "returns an Array including nil" do
+        value.should == [nil, true]
+      end
+    end
+  end
+
   describe "bytea[] cast" do
     let(:sql) { "SELECT ARRAY[decode('001122', 'hex'), decode('445566', 'hex')]::bytea[]" }
 

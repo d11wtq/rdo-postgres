@@ -761,6 +761,33 @@ describe RDO::Postgres::Driver, "bind parameter support" do
       end
     end
 
+    context "against an boolean[] field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, truths boolean[])" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (truths) VALUES (?) RETURNING *",
+          [false, true]
+        ).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, truths: [false, true]}
+      end
+
+      context "with embedded nils" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (truths) VALUES (?) RETURNING *",
+            [false, nil]
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, truths: [false, nil]}
+        end
+      end
+    end
+
     context "against an bytea[] field" do
       let(:table) { "CREATE TABLE test (id serial primary key, salts bytea[])" }
       let(:tuple) do

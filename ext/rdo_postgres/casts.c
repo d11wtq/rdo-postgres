@@ -108,6 +108,9 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
     case RDO_PG_TIMESTAMPTZOID:
       return RDO_DATE_TIME_WITH_ZONE(value);
 
+    case RDO_PG_BOOLARRAYOID:
+      return RDO_PG_ARRAY("Boolean", value, length);
+
     case RDO_PG_TEXTOID:
     case RDO_PG_CHAROID:
     case RDO_PG_VARCHAROID:
