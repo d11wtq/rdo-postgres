@@ -736,7 +736,7 @@ describe RDO::Postgres::Driver, "bind parameter support" do
     end
   end
 
-  describe "when a bind marker is contained in a string literal" do
+  describe "bind markers in a string literals" do
     let(:table) do
       <<-SQL
       CREATE TABLE test (
