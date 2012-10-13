@@ -45,6 +45,13 @@
 // text[]
 #define RDO_PG_TEXTARRAYOID 1009
 
+// char[]
+#define RDO_PG_CHARARRAYOID   1002
+#define RDO_PG_BPCHARARRAYOID 1014
+
+// varchar[]
+#define RDO_PG_VARCHARARRAYOID 1015
+
 // integer[]
 #define RDO_PG_INT2ARRAYOID 1005
 #define RDO_PG_INT4ARRAYOID 1007

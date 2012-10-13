@@ -303,6 +303,38 @@ describe RDO::Postgres::Driver, "type casting" do
     end
   end
 
+  describe "char[] cast" do
+    let(:sql) { "SELECT ARRAY['a', 'b']::char(1)[]" }
+
+    it "returns an Array of Strings" do
+      value.should == ["a", "b"]
+    end
+
+    context "including NULLs" do
+      let(:sql) { "SELECT ARRAY[NULL, 'b']::char(1)[]" }
+
+      it "returns an Array including nil" do
+        value.should == [nil, "b"]
+      end
+    end
+  end
+
+  describe "varchar[] cast" do
+    let(:sql) { "SELECT ARRAY['a', 'b']::varchar(16)[]" }
+
+    it "returns an Array of Strings" do
+      value.should == ["a", "b"]
+    end
+
+    context "including NULLs" do
+      let(:sql) { "SELECT ARRAY[NULL, 'b']::varchar(16)[]" }
+
+      it "returns an Array including nil" do
+        value.should == [nil, "b"]
+      end
+    end
+  end
+
   describe "integer[] cast" do
     let(:sql) { "SELECT ARRAY[42, 7]::integer[]" }
 

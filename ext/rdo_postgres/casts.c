@@ -110,6 +110,9 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
       return RDO_STRING(value, length, enc);
 
     case RDO_PG_TEXTARRAYOID:
+    case RDO_PG_CHARARRAYOID:
+    case RDO_PG_BPCHARARRAYOID:
+    case RDO_PG_VARCHARARRAYOID:
       return RDO_PG_ARRAY("Text", value, length);
 
     case RDO_PG_INT2ARRAYOID:
