@@ -111,11 +111,11 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
 
 /* Initialize hex decoding lookup table */
 void Init_rdo_postgres_casts(void) {
-  RDOPostgres_HexLookup = malloc(sizeof(char) * 128);
+  RDOPostgres_HexLookup = malloc(sizeof(char) * 256);
 
   if (RDOPostgres_HexLookup == NULL) {
     rb_raise(rb_eRuntimeError,
-        "Failed to allocate 128 bytes for internal lookup table");
+        "Failed to allocate 256 bytes for internal lookup table");
   }
 
   char c;
