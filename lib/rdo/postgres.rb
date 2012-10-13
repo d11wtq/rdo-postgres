@@ -8,7 +8,6 @@
 require "rdo"
 require "rdo/postgres/version"
 require "rdo/postgres/driver"
-require "rdo/postgres/util"
 
 # c extension
 require "rdo_postgres/rdo_postgres"
