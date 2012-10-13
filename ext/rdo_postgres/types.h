@@ -57,6 +57,9 @@
 #define RDO_PG_FLOAT4ARRAYOID 1021
 #define RDO_PG_FLOAT8ARRAYOID 1022
 
+// numeric[]/decimal[]
+#define RDO_PG_NUMERICARRAYOID 1231
+
 // boolean[]
 #define RDO_PG_BOOLARRAYOID 1000
 

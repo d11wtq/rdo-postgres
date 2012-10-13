@@ -761,6 +761,19 @@ describe RDO::Postgres::Driver, "bind parameter support" do
       end
     end
 
+    context "against an numeric[] field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, prices numeric[])" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (prices) VALUES (?) RETURNING *",
+          [BigDecimal("17.45"), BigDecimal("23.72")]).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, prices: [BigDecimal("17.45"), BigDecimal("23.72")]}
+      end
+    end
+
     context "against an boolean[] field" do
       let(:table) { "CREATE TABLE test (id serial primary key, truths boolean[])" }
       let(:tuple) do

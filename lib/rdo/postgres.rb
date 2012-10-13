@@ -14,6 +14,7 @@ require "rdo/postgres/array"
 require "rdo/postgres/array/text"
 require "rdo/postgres/array/integer"
 require "rdo/postgres/array/float"
+require "rdo/postgres/array/numeric"
 require "rdo/postgres/array/boolean"
 require "rdo/postgres/array/bytea"
 

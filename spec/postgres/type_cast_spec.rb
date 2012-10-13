@@ -399,6 +399,31 @@ describe RDO::Postgres::Driver, "type casting" do
     end
   end
 
+  describe "numeric[] cast" do
+    let(:sql) { "SELECT ARRAY['123.45', '17.63']::numeric[]" }
+
+    it "returns an Array of BigDecimals" do
+      value.should == [BigDecimal("123.45"), BigDecimal("17.63")]
+    end
+
+    context "including NaN" do
+      let(:sql) { "SELECT ARRAY['NaN', '17.63']::numeric[]" }
+
+      it "returns an Array including NaN" do
+        value[0].should be_nan
+        value[1].should == BigDecimal("17.63")
+      end
+    end
+
+    context "including NULLs" do
+      let(:sql) { "SELECT ARRAY[NULL, '17.63']::numeric[]" }
+
+      it "returns an Array including nil" do
+        value.should == [nil, BigDecimal("17.63")]
+      end
+    end
+  end
+
   describe "boolean[] cast" do
     let(:sql) { "SELECT ARRAY['t', 'f']::boolean[]" }
 
