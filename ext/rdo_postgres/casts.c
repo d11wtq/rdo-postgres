@@ -7,9 +7,8 @@
 
 #include "casts.h"
 #include <stdlib.h>
-#include <postgres.h>
-#include <catalog/pg_type.h>
 #include "macros.h"
+#include "types.h"
 
 /** Predicate test if the given string is formatted as \x0afe... */
 #define RDO_PG_NEW_HEX_P(s, len) (len >= 2 && s[0] == '\\' && s[1] == 'x')
@@ -74,47 +73,51 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
   int    length = PQgetlength(res, row, col);
 
   switch (PQftype(res, col)) {
-    case INT2OID:
-    case INT4OID:
-    case INT8OID:
+    case RDO_PG_INT2OID:
+    case RDO_PG_INT4OID:
+    case RDO_PG_INT8OID:
       return RDO_FIXNUM(value);
 
-    case FLOAT4OID:
-    case FLOAT8OID:
+    case RDO_PG_FLOAT4OID:
+    case RDO_PG_FLOAT8OID:
       return RDO_FLOAT(value);
 
-    case NUMERICOID:
+    case RDO_PG_NUMERICOID:
       return RDO_DECIMAL(value);
 
-    case BOOLOID:
+    case RDO_PG_BOOLOID:
       return RDO_BOOL(value);
 
-    case BYTEAOID:
+    case RDO_PG_BYTEAOID:
       if (RDO_PG_NEW_HEX_P(value, length))
         return rdo_postgres_cast_bytea_hex(value, length);
       else
         return rdo_postgres_cast_bytea_escape(value, length);
 
-    case DATEOID:
+    case RDO_PG_DATEOID:
       return RDO_DATE(value);
 
-    case TIMESTAMPOID:
+    case RDO_PG_TIMESTAMPOID:
       return RDO_DATE_TIME_WITHOUT_ZONE(value);
 
-    case TIMESTAMPTZOID:
+    case RDO_PG_TIMESTAMPTZOID:
       return RDO_DATE_TIME_WITH_ZONE(value);
 
-    case TEXTOID:
-    case CHAROID:
-    case VARCHAROID:
-    case BPCHAROID:
+    case RDO_PG_TEXTOID:
+    case RDO_PG_CHAROID:
+    case RDO_PG_VARCHAROID:
+    case RDO_PG_BPCHAROID:
       return RDO_STRING(value, length, enc);
 
-    case TEXTARRAYOID:
+    case RDO_PG_TEXTARRAYOID:
       return RDO_PG_ARRAY("Text", value, length);
 
-    case INT4ARRAYOID:
+    case RDO_PG_INT4ARRAYOID:
       return RDO_PG_ARRAY("Integer", value, length);
+
+    case RDO_PG_FLOAT4ARRAYOID:
+    case RDO_PG_FLOAT8ARRAYOID:
+      return RDO_PG_ARRAY("Float", value, length);
 
     default:
       return RDO_BINARY_STRING(value, length);

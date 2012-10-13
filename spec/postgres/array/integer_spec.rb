@@ -1,13 +1,13 @@
 require "spec_helper"
 
-describe RDO::Postgres::Array do
+describe RDO::Postgres::Array::Integer do
   it "is a kind of ::Array" do
     RDO::Postgres::Array::Integer.new.should be_a_kind_of(::Array)
   end
 
   describe "#to_s" do
     context "with an empty array" do
-      let(:arr) { RDO::Postgres::Array[] }
+      let(:arr) { RDO::Postgres::Array::Integer[] }
 
       it "returns {}" do
         arr.to_s.should == '{}'

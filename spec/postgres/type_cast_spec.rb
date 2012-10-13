@@ -318,4 +318,20 @@ describe RDO::Postgres::Driver, "type casting" do
       end
     end
   end
+
+  describe "float[] cast" do
+    let(:sql) { "SELECT ARRAY[42.6, 7.9]::float[]" }
+
+    it "returns an Array of Floats" do
+      value.should == [42.6, 7.9]
+    end
+
+    context "including NULLs" do
+      let(:sql) { "SELECT ARRAY[NULL, 7.2]::float[]" }
+
+      it "returns an Array including nil" do
+        value.should == [nil, 7.2]
+      end
+    end
+  end
 end

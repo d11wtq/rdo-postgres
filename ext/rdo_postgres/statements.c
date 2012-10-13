@@ -12,8 +12,7 @@
 #include "macros.h"
 #include <stdlib.h>
 #include <libpq-fe.h>
-#include <postgres.h>
-#include <catalog/pg_type.h>
+#include "types.h"
 
 /** I don't like magic numbers */
 #define RDO_PG_NO_OIDS 0
@@ -182,7 +181,7 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
         args[i] = RDO_OBJ_TO_S(args[i]);
       }
 
-      if (executor->param_types[i] == BYTEAOID) {
+      if (executor->param_types[i] == RDO_PG_BYTEAOID) {
         values[i] = PQescapeByteaConn(executor->driver->conn_ptr,
             RSTRING_PTR(args[i]),
             RSTRING_LEN(args[i]),
@@ -204,7 +203,7 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
       RDO_PG_TEXT_OUTPUT);
 
   for (i = 0; i < argc; ++i) {
-    if (executor->param_types[i] == BYTEAOID) {
+    if (executor->param_types[i] == RDO_PG_BYTEAOID) {
       PQfreemem(values[i]);
     }
   }
