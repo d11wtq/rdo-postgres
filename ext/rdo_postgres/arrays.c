@@ -12,14 +12,14 @@
 #include <libpq-fe.h>
 
 /** Parse a bytea string into a binary Ruby String */
-VALUE rdo_postgres_array_bytea_parse_value(VALUE self, VALUE s) {
+static VALUE rdo_postgres_array_bytea_parse_value(VALUE self, VALUE s) {
   s = rb_call_super(1, &s);
   Check_Type(s, T_STRING);
   return rdo_postgres_cast_bytea(RSTRING_PTR(s), RSTRING_LEN(s));
 }
 
 /** Format a value as a bytea */
-VALUE rdo_postgres_array_bytea_format_value(VALUE self, VALUE v) {
+static VALUE rdo_postgres_array_bytea_format_value(VALUE self, VALUE v) {
   if (TYPE(v) != T_STRING) {
     v = RDO_OBJ_TO_S(v);
   }
