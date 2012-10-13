@@ -182,8 +182,8 @@ static VALUE rdo_postgres_statement_executor_execute(int argc, VALUE * args,
       }
 
       if (executor->param_types[i] == RDO_PG_BYTEAOID) {
-        values[i] = PQescapeByteaConn(executor->driver->conn_ptr,
-            RSTRING_PTR(args[i]),
+        values[i] = (char *) PQescapeByteaConn(executor->driver->conn_ptr,
+            (unsigned char *) RSTRING_PTR(args[i]),
             RSTRING_LEN(args[i]),
             &(lengths[i]));
       } else {

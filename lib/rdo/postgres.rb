@@ -14,6 +14,7 @@ require "rdo/postgres/array"
 require "rdo/postgres/array/text"
 require "rdo/postgres/array/integer"
 require "rdo/postgres/array/float"
+require "rdo/postgres/array/bytea"
 
 # c extension
 require "rdo_postgres/rdo_postgres"

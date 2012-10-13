@@ -398,4 +398,20 @@ describe RDO::Postgres::Driver, "type casting" do
       end
     end
   end
+
+  describe "bytea[] cast" do
+    let(:sql) { "SELECT ARRAY[decode('001122', 'hex'), decode('445566', 'hex')]::bytea[]" }
+
+    it "returns an Array of Strings" do
+      value.should == ["\x00\x11\x22", "\x44\x55\x66"]
+    end
+
+    context "including NULLs" do
+      let(:sql) { "SELECT ARRAY[NULL, decode('001122', 'hex')]::bytea[]" }
+
+      it "returns an Array including nil" do
+        value.should == [nil, "\x00\x11\x22"]
+      end
+    end
+  end
 end

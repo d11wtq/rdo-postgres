@@ -7,7 +7,7 @@
 
 module RDO
   module Postgres
-    # Ruby handling for integer[] type in PostgreSQL.
+    # Ruby handling for float[] type in PostgreSQL.
     class Array::Float < Array
       def parse_value(s)
         case s

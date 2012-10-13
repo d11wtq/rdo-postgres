@@ -60,3 +60,6 @@
 // float[]
 #define RDO_PG_FLOAT4ARRAYOID 1021
 #define RDO_PG_FLOAT8ARRAYOID 1022
+
+// bytea[]
+#define RDO_PG_BYTEAARRAYOID 1001

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <ruby.h>
 #include "driver.h"
+#include "arrays.h"
 
 /**
  * Extension initializer.
@@ -15,4 +16,5 @@
 void Init_rdo_postgres(void) {
   rb_require("rdo");
   Init_rdo_postgres_driver();
+  Init_rdo_postgres_arrays();
 }

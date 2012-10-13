@@ -50,17 +50,25 @@ static VALUE rdo_postgres_cast_bytea_hex(char * hex, size_t len) {
 
 /** Cast from a bytea to a String according to a regular escape format */
 static VALUE rdo_postgres_cast_bytea_escape(char * escaped, size_t len) {
-  unsigned char * buffer  = PQunescapeBytea(escaped, &len);
+  unsigned char * buffer  = PQunescapeBytea((unsigned char *) escaped, &len);
 
   if (buffer == NULL) {
     rb_raise(rb_eRuntimeError,
         "Failed to allocate memory for PQunescapeBytea() conversion");
   }
 
-  VALUE str = rb_str_new(buffer, len);
+  VALUE str = rb_str_new((char *) buffer, len);
   PQfreemem(buffer);
 
   return str;
+}
+
+/** Cast from a bytea to a String, automatically detecting the format */
+VALUE rdo_postgres_cast_bytea(char * escaped, size_t len) {
+  if (RDO_PG_NEW_HEX_P(escaped, len))
+    return rdo_postgres_cast_bytea_hex(escaped, len);
+  else
+    return rdo_postgres_cast_bytea_escape(escaped, len);
 }
 
 /** Get the value as a ruby type */
@@ -89,10 +97,7 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
       return RDO_BOOL(value);
 
     case RDO_PG_BYTEAOID:
-      if (RDO_PG_NEW_HEX_P(value, length))
-        return rdo_postgres_cast_bytea_hex(value, length);
-      else
-        return rdo_postgres_cast_bytea_escape(value, length);
+      return rdo_postgres_cast_bytea(value, length);
 
     case RDO_PG_DATEOID:
       return RDO_DATE(value);
@@ -123,6 +128,9 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
     case RDO_PG_FLOAT4ARRAYOID:
     case RDO_PG_FLOAT8ARRAYOID:
       return RDO_PG_ARRAY("Float", value, length);
+
+    case RDO_PG_BYTEAARRAYOID:
+      return RDO_PG_ARRAY("Bytea", value, length);
 
     default:
       return RDO_BINARY_STRING(value, length);
