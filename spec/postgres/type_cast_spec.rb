@@ -310,6 +310,30 @@ describe RDO::Postgres::Driver, "type casting" do
       value.should == [42, 7]
     end
 
+    context "using int2[]" do
+      let(:sql) { "SELECT ARRAY[42, 7]::int2[]" }
+
+      it "returns an Array of Fixnums" do
+        value.should == [42, 7]
+      end
+    end
+
+    context "using int4[]" do
+      let(:sql) { "SELECT ARRAY[42, 7]::int4[]" }
+
+      it "returns an Array of Fixnums" do
+        value.should == [42, 7]
+      end
+    end
+
+    context "using int8[]" do
+      let(:sql) { "SELECT ARRAY[42, 7]::int8[]" }
+
+      it "returns an Array of Fixnums" do
+        value.should == [42, 7]
+      end
+    end
+
     context "including NULLs" do
       let(:sql) { "SELECT ARRAY[NULL, 7]::integer[]" }
 
@@ -324,6 +348,14 @@ describe RDO::Postgres::Driver, "type casting" do
 
     it "returns an Array of Floats" do
       value.should == [42.6, 7.9]
+    end
+
+    context "using float4[]" do
+      let(:sql) { "SELECT ARRAY[42.6, 7.9]::float4[]" }
+
+      it "returns an Array of Floats" do
+        value.should == [42.6, 7.9]
+      end
     end
 
     context "including NULLs" do
