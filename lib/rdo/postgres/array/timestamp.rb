@@ -7,10 +7,10 @@
 
 module RDO
   module Postgres
-    # Ruby handling for date[] type in PostgreSQL.
-    class Array::Date < Array
+    # Ruby handling for timestamp[] type in PostgreSQL.
+    class Array::Timestamp < Array
       def parse_value(s)
-        RDO::Util.date(s)
+        RDO::Util.date_time_without_zone(s)
       end
     end
   end

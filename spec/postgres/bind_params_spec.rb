@@ -840,6 +840,22 @@ describe RDO::Postgres::Driver, "bind parameter support" do
         tuple.should == {id: 1, days: [Date.new(2012, 9, 22), Date.new(1983, 5, 3)]}
       end
     end
+
+    context "against a timestamp[] field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, times timestamp[])" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (times) VALUES (?) RETURNING *",
+          [Time.new(2012, 9, 22, 6, 15, 34), Time.new(1983, 5, 3, 14, 56, 0)]).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, times: [
+          DateTime.new(2012, 9, 22, 6, 15, 34, DateTime.now.zone),
+          DateTime.new(1983, 5, 3, 14, 56, 0, DateTime.now.zone)
+        ]}
+      end
+    end
   end
 
   describe "arbitrary Object param" do

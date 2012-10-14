@@ -68,3 +68,6 @@
 
 // date[]
 #define RDO_PG_DATEARRAYOID 1182
+
+// timestamp[]/timestamptz[]
+#define RDO_PG_TIMESTAMPARRAYOID 1115

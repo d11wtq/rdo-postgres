@@ -471,4 +471,15 @@ describe RDO::Postgres::Driver, "type casting" do
       end
     end
   end
+
+  describe "timestamp[] cast" do
+    let(:sql) { "SELECT ARRAY['2012-09-22 06:57:01', '1983-05-03 13:42:03']::timestamp[]" }
+
+    it "returns an Array of DateTimes" do
+      value.should == [
+        DateTime.new(2012, 9, 22, 6, 57, 1, DateTime.now.zone),
+        DateTime.new(1983, 5, 3, 13, 42, 3, DateTime.now.zone)
+      ]
+    end
+  end
 end
