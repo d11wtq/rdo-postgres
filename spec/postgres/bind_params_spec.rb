@@ -738,6 +738,19 @@ describe RDO::Postgres::Driver, "bind parameter support" do
           tuple.should == {id: 1, words: ["apple\norange"]}
         end
       end
+
+      context "multidimensional" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (words) VALUES (?) RETURNING *",
+            [['a "b"', "c"], ["d \\ e", "f"]]
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, words: [['a "b"', "c"], ["d \\ e", "f"]]}
+        end
+      end
     end
 
     context "against an integer[] field" do
@@ -757,6 +770,19 @@ describe RDO::Postgres::Driver, "bind parameter support" do
 
         it "is inferred correctly" do
           tuple.should == {id: 1, days: [4, nil]}
+        end
+      end
+
+      context "multidimensional" do
+        let(:tuple) do
+          connection.execute(
+            "INSERT INTO test (days) VALUES (?) RETURNING *",
+            [[4, 12], [9, 29]]
+          ).first
+        end
+
+        it "is inferred correctly" do
+          tuple.should == {id: 1, days: [[4, 12], [9, 29]]}
         end
       end
     end

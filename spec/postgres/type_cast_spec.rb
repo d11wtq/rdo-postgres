@@ -301,6 +301,14 @@ describe RDO::Postgres::Driver, "type casting" do
         value.should == [nil, "b"]
       end
     end
+
+    context "multidimensional" do
+      let(:sql) { %q{SELECT ARRAY[ARRAY['a "x"', 'b'], ARRAY['c', 'd']]::text[]} }
+
+      it "returns an Array of Arrays of Strings" do
+        value.should == [['a "x"', "b"], ["c", "d"]]
+      end
+    end
   end
 
   describe "char[] cast" do
@@ -373,6 +381,14 @@ describe RDO::Postgres::Driver, "type casting" do
         value.should == [nil, 7]
       end
     end
+
+    context "multidimensional" do
+      let(:sql) { "SELECT ARRAY[ARRAY[42, 7], ARRAY[1, 9]]::integer[]" }
+
+      it "returns an Array of Arrays of Fixnums" do
+        value.should == [[42, 7], [1, 9]]
+      end
+    end
   end
 
   describe "float[] cast" do
@@ -395,6 +411,14 @@ describe RDO::Postgres::Driver, "type casting" do
 
       it "returns an Array including nil" do
         value.should == [nil, 7.2]
+      end
+    end
+
+    context "multidimensional" do
+      let(:sql) { %q{SELECT ARRAY[ARRAY[9.7, 10.1], ARRAY[0.4, 1.2]]::float[]} }
+
+      it "returns an Array of Arrays of Floats" do
+        value.should == [[9.7, 10.1], [0.4, 1.2]]
       end
     end
   end

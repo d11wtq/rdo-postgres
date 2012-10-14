@@ -53,6 +53,14 @@ describe RDO::Postgres::Array do
         arr.to_s.should == '{"42","7"}'
       end
     end
+
+    context "with a multi-dimensional Array" do
+      let(:arr) { RDO::Postgres::Array[["a", "b"], ["c", "d"]] }
+
+      it "formats the inner Arrays" do
+        arr.to_s.should == '{{"a","b"},{"c","d"}}'
+      end
+    end
   end
 
   describe "#to_a" do
@@ -60,6 +68,14 @@ describe RDO::Postgres::Array do
 
     it "returns a core ruby Array" do
       arr.to_a.class.should == ::Array
+    end
+
+    context "with a multidimensional Array" do
+      let(:arr) { RDO::Postgres::Array[[1, 2], [3, 4]] }
+
+      it "converts the inner elements to core Ruby Arrays" do
+        arr.to_a[0].class.should == ::Array
+      end
     end
   end
 
@@ -116,6 +132,30 @@ describe RDO::Postgres::Array do
 
       it "uses nil as the value" do
         arr.to_a.should == [nil, nil, "c"]
+      end
+    end
+
+    context "with a multi-dimensonal array" do
+      let(:str) { '{{a,b},{c,d}}' }
+
+      it "returns an Array of Arrays of Strings" do
+        arr.to_a.should == [["a", "b"], ["c", "d"]]
+      end
+
+      context "containing commas" do
+        let(:str) { '{{"a,b","c,d"},{"e,f","g,h"}}' }
+
+        it "returns an Array of Arrays of Strings" do
+          arr.to_a.should == [["a,b", "c,d"], ["e,f", "g,h"]]
+        end
+      end
+
+      context "containing escaped quotes" do
+        let(:str) { '{{"a \\"b\\"","c \\"d\\""},{"e","f"}}' }
+
+        it "returns an Array of Arrays of Strings" do
+          arr.to_a.should == [['a "b"', 'c "d"'], ["e", "f"]]
+        end
       end
     end
   end

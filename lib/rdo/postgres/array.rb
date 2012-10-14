@@ -21,26 +21,55 @@ module RDO
     #   # => ["John Smith", "Sarah Doe"]
     class Array < ::Array
       class << self
+        # Shortcut for the constructor.
+        #
+        # @param [Object...] *args
+        #   a list of objects to put inside the Array
+        #
+        # @return [Array]
+        #   a newly initialzed Array
+        def [](*args)
+          new(args)
+        end
+
         # Read a PostgreSQL array in its string form.
         #
         # @param [String] str
-        #   an array string from postgresql
+        #   an array string from PostgreSQL
         #
         # @return [Array]
         #   a Ruby Array for this string
         def parse(str)
-          new.tap do |a|
-            a.replace(str[1...-1].split(",").map(&a.method(:parse_value_or_null)))
-          end
+          # defined in ext/rdo_postgres/arrays.c
+        end
+      end
+
+      # Initialize a new Array, coercing any sub-Arrays to the same type.
+      #
+      # @param [Array] arr
+      #   the Array to wrap
+      def initialize(arr = 0)
+        if ::Array === arr
+          super(arr.map{|v| ::Array === v ? self.class.new(v) : v})
+        else
+          super
         end
       end
 
       # Convert the Array to the format used by PostgreSQL.
       #
       # @return [String]
-      #   a postgresql array string
+      #   a PostgreSQL array string
       def to_s
         "{#{map(&method(:format_value_or_null)).join(",")}}"
+      end
+
+      # Convert the Array to a standard Ruby Array.
+      #
+      # @return [::Array]
+      #   a Ruby Array
+      def to_a
+        super.map{|v| Array === v ? v.to_a : v}
       end
 
       # Format an individual element in the Array for building into a String.
@@ -73,7 +102,11 @@ module RDO
       private
 
       def format_value_or_null(v)
-        v.nil? ? "NULL" : format_value(v)
+        case v
+        when nil   then "NULL"
+        when Array then v.to_s
+        else format_value(v)
+        end
       end
 
       def parse_value_or_null(s)
