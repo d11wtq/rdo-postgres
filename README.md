@@ -73,9 +73,8 @@ currently mapped types are:
   - TIMESTAMP -> DateTime (in the system time zone)
   - TIMESTAMPTZ -> DateTime (in the specified time zone)
 
-All 1-dimensional Arrays of the above listed are also available. Support for
-multi-dimensional Arrays is planned immediately. Support for custom-typed
-Arrays is coming.
+All **n-dimensional Arrays** of the above listed **are supported**. Support
+for custom-typed Arrays is coming.
 
 ### Bind parameters support
 
