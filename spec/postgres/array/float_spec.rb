@@ -75,7 +75,8 @@ describe RDO::Postgres::Array::Float do
       let(:str) { '{NaN,7.2}' }
 
       it "uses Float::NAN as the value" do
-        arr.to_a.should == [Float::NAN, 7.2]
+        arr.to_a[0].should be_nan
+        arr.to_a[1].should == 7.2
       end
     end
 

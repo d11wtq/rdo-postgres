@@ -91,7 +91,8 @@
  * @return VALUE (String)
  *   a Ruby String
  */
-#define RDO_BINARY_STRING(s, len) (rb_str_new(s, len))
+#define RDO_BINARY_STRING(s, len) \
+  (RDO_STRING(s, len, rb_enc_find_index("binary")))
 
 /**
  * Convert a C string to a Fixnum.
