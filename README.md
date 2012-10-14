@@ -50,6 +50,33 @@ conn = RDO.connect(
 )
 ```
 
+### Type Support
+
+If not listed below, the String form of the value will be returned. The
+currently mapped types are:
+
+  - NULL -> nil
+  - BOOLEAN -> TrueClass/FalseClass
+  - TEXT -> String
+  - VARCHAR -> String
+  - CHAR -> String
+  - BYTEA -> String
+  - INTEGER -> Fixnum
+  - INT2 -> Fixnum
+  - INT4 -> Fixnum
+  - INT8 -> Fixnum
+  - FLOAT/REAL -> Float
+  - FLOAT4 -> Float
+  - FLOAT8 -> Float
+  - NUMERIC/DECIMAL -> BigDecimal
+  - DATE -> Date
+  - TIMESTAMP -> DateTime (in the system time zone)
+  - TIMESTAMPTZ -> DateTime (in the specified time zone)
+
+All 1-dimensional Arrays of the above listed are also available. Support for
+multi-dimensional Arrays is planned immediately. Support for custom-typed
+Arrays is coming.
+
 ### Bind parameters support
 
 PostgreSQL uses $1, $2 etc for bind parameters. RDO uses '?'. You can use
