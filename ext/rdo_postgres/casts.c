@@ -144,6 +144,9 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
     case RDO_PG_TIMESTAMPARRAYOID:
       return RDO_PG_ARRAY("Timestamp", value, length);
 
+    case RDO_PG_TIMESTAMPTZARRAYOID:
+      return RDO_PG_ARRAY("TimestampTZ", value, length);
+
     default:
       return RDO_BINARY_STRING(value, length);
   }

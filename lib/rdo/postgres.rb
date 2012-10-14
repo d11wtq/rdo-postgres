@@ -19,6 +19,7 @@ require "rdo/postgres/array/boolean"
 require "rdo/postgres/array/bytea"
 require "rdo/postgres/array/date"
 require "rdo/postgres/array/timestamp"
+require "rdo/postgres/array/timestamp_tz"
 
 # c extension
 require "rdo_postgres/rdo_postgres"
