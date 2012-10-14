@@ -53,18 +53,6 @@
   (rb_funcall(rb_path2class("RDO::Result"), rb_intern("new"), 2, tuples, info))
 
 /**
- * Wrap the given StatementExecutor in a RDO::Statement.
- *
- * @param VALUE
- *   any object that responds to #command and #execute
- *
- * @return VALUE
- *   an RDO::Statement
- */
-#define RDO_STATEMENT(executor) \
-  (rb_funcall(rb_path2class("RDO::Statement"), rb_intern("new"), 1, executor))
-
-/**
  * Convert a C string to a ruby String.
  *
  * @param (char *) s
