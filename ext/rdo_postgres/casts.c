@@ -138,6 +138,9 @@ VALUE rdo_postgres_cast_value(PGresult * res, int row, int col, int enc) {
     case RDO_PG_BYTEAARRAYOID:
       return RDO_PG_ARRAY("Bytea", value, length);
 
+    case RDO_PG_DATEARRAYOID:
+      return RDO_PG_ARRAY("Date", value, length);
+
     default:
       return RDO_BINARY_STRING(value, length);
   }

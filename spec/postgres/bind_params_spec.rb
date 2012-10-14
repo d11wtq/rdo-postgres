@@ -827,6 +827,19 @@ describe RDO::Postgres::Driver, "bind parameter support" do
         end
       end
     end
+
+    context "against an date[] field" do
+      let(:table) { "CREATE TABLE test (id serial primary key, days date[])" }
+      let(:tuple) do
+        connection.execute(
+          "INSERT INTO test (days) VALUES (?) RETURNING *",
+          [Date.new(2012, 9, 22), Date.new(1983, 5, 3)]).first
+      end
+
+      it "is inferred correctly" do
+        tuple.should == {id: 1, days: [Date.new(2012, 9, 22), Date.new(1983, 5, 3)]}
+      end
+    end
   end
 
   describe "arbitrary Object param" do

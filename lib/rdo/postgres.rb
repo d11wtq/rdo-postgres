@@ -17,6 +17,7 @@ require "rdo/postgres/array/float"
 require "rdo/postgres/array/numeric"
 require "rdo/postgres/array/boolean"
 require "rdo/postgres/array/bytea"
+require "rdo/postgres/array/date"
 
 # c extension
 require "rdo_postgres/rdo_postgres"

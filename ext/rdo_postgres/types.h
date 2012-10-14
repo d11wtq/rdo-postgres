@@ -65,3 +65,6 @@
 
 // bytea[]
 #define RDO_PG_BYTEAARRAYOID 1001
+
+// date[]
+#define RDO_PG_DATEARRAYOID 1182

@@ -455,4 +455,20 @@ describe RDO::Postgres::Driver, "type casting" do
       end
     end
   end
+
+  describe "date[] cast" do
+    let(:sql) { "SELECT ARRAY['2012-09-22', '1983-05-03']::date[]" }
+
+    it "returns an Array of Dates" do
+      value.should == [Date.new(2012, 9, 22), Date.new(1983, 5, 3)]
+    end
+
+    context "including NULLs" do
+      let(:sql) { "SELECT ARRAY[NULL, '1983-05-03']::date[]" }
+
+      it "returns an Array including nil" do
+        value.should == [nil, Date.new(1983, 5, 3)]
+      end
+    end
+  end
 end
