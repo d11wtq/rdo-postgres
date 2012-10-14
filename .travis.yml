@@ -7,5 +7,6 @@ script: "CONNECTION=postgres://rdo:rdo@127.0.0.1/rdo?encoding=utf-8 bundle exec 
 rvm:
   - 1.9.2
   - 1.9.3
+  - rbx-19mode
 notifications:
   email: chris@w3style.co.uk
