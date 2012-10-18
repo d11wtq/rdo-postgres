@@ -14,10 +14,8 @@
 
 /** During GC, free any stranded connection */
 static void rdo_postgres_driver_free(RDOPostgresDriver * driver) {
-  printf("Maybe freeing driver\n");
   if (driver->ref_count > 0)
     return;
-  printf("Freeing driver\n");
 
   PQfinish(driver->conn_ptr);
   driver->is_open  = 0;

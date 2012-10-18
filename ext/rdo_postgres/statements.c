@@ -39,8 +39,8 @@ typedef struct {
   VALUE               driver_obj;
 } RDOPostgresStatementExecutor;
 
+/** Claim ownership of driver during GC */
 static void rdo_postgres_statement_executor_mark(RDOPostgresStatementExecutor * executor) {
-  printf("Marking driver\n");
   rb_gc_mark(executor->driver_obj);
 }
 
