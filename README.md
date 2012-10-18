@@ -100,9 +100,9 @@ conn.execute("SELECT * FROM users WHERE banned = $1 AND created_at > ?", true, 1
 If you find any bugs, please send a pull request if you think you can
 fix it, or file in an issue in the issue tracker.
 
-I'm particulary interested in patches surrounding support for built-in type
-arrays, multi-dimensional arrays and arrays of custom types, such as ENUMs
-(in order of difficulty/preference).
+I'm particulary interested in patches surrounding support for arrays of
+custom types, such as ENUMs (this is done by reading from pg_type, in an
+efficient manner).
 
 When sending pull requests, please use topic branches—don't send a pull
 request from the master branch of your fork, as that may change
