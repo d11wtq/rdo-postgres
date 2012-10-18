@@ -41,11 +41,10 @@ typedef struct {
 /** Free memory associated with the StatementExecutor during GC */
 static void rdo_postgres_statement_executor_free(
     RDOPostgresStatementExecutor * executor) {
-  if (executor->driver != NULL && executor->driver->conn_ptr != NULL &&
-      executor->driver->is_open) {
+  if (executor->driver->is_open) {
     char dealloc_cmd[strlen(executor->stmt_name) + 12];
     sprintf(dealloc_cmd, "DEALLOCATE %s", executor->stmt_name);
-    PQclear(PQexec(executor->driver->conn_ptr, dealloc_cmd));
+    //PQclear(PQexec(executor->driver->conn_ptr, dealloc_cmd));
   }
 
   free(executor->stmt_name);
