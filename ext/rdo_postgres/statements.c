@@ -44,8 +44,7 @@ static void rdo_postgres_statement_executor_free(
   if (executor->driver->is_open) {
     char dealloc_cmd[strlen(executor->stmt_name) + 12];
     sprintf(dealloc_cmd, "DEALLOCATE %s", executor->stmt_name);
-    printf("%s\n", dealloc_cmd);
-    //PQclear(PQexec(executor->driver->conn_ptr, dealloc_cmd));
+    PQclear(PQexec(executor->driver->conn_ptr, dealloc_cmd));
   }
 
   free(executor->stmt_name);

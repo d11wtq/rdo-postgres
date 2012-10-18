@@ -15,6 +15,8 @@
 /** During GC, free any stranded connection */
 static void rdo_postgres_driver_free(RDOPostgresDriver * driver) {
   PQfinish(driver->conn_ptr);
+  driver->is_open  = 0;
+  driver->conn_ptr = NULL;
   free(driver);
 }
 
