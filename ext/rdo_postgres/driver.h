@@ -11,6 +11,7 @@
 /** Struct that RDO::Postgres::Driver wraps */
 typedef struct {
   PGconn * conn_ptr;
+  int      ref_count;
   int      is_open;
   int      stmt_count;
   int      encoding;

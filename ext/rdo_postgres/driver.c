@@ -14,7 +14,12 @@
 
 /** During GC, free any stranded connection */
 static void rdo_postgres_driver_free(RDOPostgresDriver * driver) {
+  if (driver->ref_count > 0)
+    return;
+
   PQfinish(driver->conn_ptr);
+  driver->is_open  = 0;
+  driver->conn_ptr = NULL;
   free(driver);
 }
 
@@ -26,6 +31,7 @@ static VALUE rdo_postgres_driver_allocate(VALUE klass) {
   RDOPostgresDriver * driver = malloc(sizeof(RDOPostgresDriver));
 
   driver->conn_ptr   = NULL;
+  driver->ref_count  = 0;
   driver->is_open    = 0;
   driver->stmt_count = 0;
   driver->encoding   = -1;

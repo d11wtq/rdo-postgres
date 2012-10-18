@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <libpq-fe.h>
 #include "types.h"
+#include <string.h>
 
 /** I don't like magic numbers */
 #define RDO_PG_NO_OIDS 0
@@ -35,11 +36,23 @@ typedef struct {
   int                 nparams;
   Oid               * param_types;
   RDOPostgresDriver * driver;
+  VALUE               driver_obj;
 } RDOPostgresStatementExecutor;
 
+/** Claim ownership of driver during GC */
+static void rdo_postgres_statement_executor_mark(RDOPostgresStatementExecutor * executor) {
+  rb_gc_mark(executor->driver_obj);
+}
+
 /** Free memory associated with the StatementExecutor during GC */
-static void rdo_postgres_statement_executor_free(
-    RDOPostgresStatementExecutor * executor) {
+static void rdo_postgres_statement_executor_free(RDOPostgresStatementExecutor * executor) {
+  if (executor->driver->is_open) {
+    char dealloc_cmd[strlen(executor->stmt_name) + 12];
+    sprintf(dealloc_cmd, "DEALLOCATE %s", executor->stmt_name);
+    PQclear(PQexec(executor->driver->conn_ptr, dealloc_cmd));
+  }
+
+  executor->driver->ref_count--;
   free(executor->stmt_name);
   free(executor->cmd);
   free(executor->param_types);
@@ -120,13 +133,17 @@ VALUE rdo_postgres_statement_executor_new(VALUE driver, VALUE cmd, VALUE name) {
     malloc(sizeof(RDOPostgresStatementExecutor));
 
   Data_Get_Struct(driver, RDOPostgresDriver, executor->driver);
+  executor->driver_obj  = driver;
   executor->stmt_name   = strdup(RSTRING_PTR(name));
   executor->cmd         = strdup(RSTRING_PTR(cmd));
   executor->nparams     = 0;
   executor->param_types = NULL;
+  executor->driver->ref_count++;
 
-  VALUE self = Data_Wrap_Struct(rdo_postgres_cStatementExecutor, 0,
-      rdo_postgres_statement_executor_free, executor);
+  VALUE self = Data_Wrap_Struct(rdo_postgres_cStatementExecutor,
+      &rdo_postgres_statement_executor_mark,
+      rdo_postgres_statement_executor_free,
+      executor);
 
   rb_obj_call_init(self, 1, &driver);
 
@@ -135,7 +152,6 @@ VALUE rdo_postgres_statement_executor_new(VALUE driver, VALUE cmd, VALUE name) {
 
 /** Initialize the StatementExecutor with the given driver and command */
 static VALUE rdo_postgres_statement_executor_initialize(VALUE self, VALUE driver) {
-  rb_iv_set(self, "driver", driver); // GC safety
   rdo_postgres_statement_executor_prepare(self);
   return self;
 }
