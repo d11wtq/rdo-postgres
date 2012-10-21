@@ -59,7 +59,7 @@ currently mapped types are tabled below:
     </tr>
     <tr>
       <th>boolean</th>
-      <td>TrueClass/FalseClass</td>
+      <td>TrueClass, FalseClass</td>
       <td>The strings 't' and 'f' will work as inputs too</td>
     </tr>
     <tr>
