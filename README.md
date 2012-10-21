@@ -5,11 +5,14 @@ This is the PostgreSQL driver for [RDO—Ruby Data Objects]
 
 [![Build Status](https://secure.travis-ci.org/d11wtq/rdo-postgres.png?branch=master)](http://travis-ci.org/d11wtq/rdo-postgres)
 
-Refer to the RDO project [README](https://github.com/d11wtq/rdo) for usage
-information.
+Refer to the [RDO project README](https://github.com/d11wtq/rdo) for full
+usage information.
 
-This driver cannot be used with PostgreSQL versions older than 7.4. Those
-versions are no longer supported by PostgreSQL in any case.
+## Supported PostgreSQL version
+
+This driver supports PostgreSQL versions >= 7.4.
+
+Older versions are no longer supported by PostgreSQL in any case.
 
 ## Installation
 
@@ -27,56 +30,120 @@ And install with Bundler:
 
 ## Usage
 
-The registered URI schemes are postgres:// and postgresql://
+The registered URI schemes are postgres://, postgresql:// and psql://.
 
 ``` ruby
-require "rdo"
 require "rdo-postgres"
 
 conn = RDO.connect("postgres://user:pass@localhost/dbname?encoding=utf-8")
 ```
 
-Alternatively, give the driver name as "postgres" or "postgresql" in an
-options Hash.
-
-``` ruby
-conn = RDO.connect(
-  driver:    "postgresql",
-  host:      "localhost",
-  user:      "user",
-  passsword: "pass",
-  database:  "dbname",
-  encoding:  "utf-8"
-)
-```
-
 ### Type Support
 
 If not listed below, the String form of the value will be returned. The
-currently mapped types are:
+currently mapped types are tabled below:
 
-  - NULL -> nil
-  - BOOLEAN -> TrueClass/FalseClass
-  - TEXT -> String
-  - VARCHAR -> String
-  - CHAR -> String
-  - BYTEA -> String
-  - INTEGER -> Fixnum
-  - INT2 -> Fixnum
-  - INT4 -> Fixnum
-  - INT8 -> Fixnum
-  - FLOAT/REAL -> Float
-  - FLOAT4 -> Float
-  - FLOAT8 -> Float
-  - NUMERIC/DECIMAL -> BigDecimal
-  - DATE -> Date
-  - TIMESTAMP -> DateTime (in the system time zone)
-  - TIMESTAMPTZ -> DateTime (in the specified time zone)
+<table>
+  <thead>
+    <tr>
+      <th>PostgreSQL Type</th>
+      <th>Ruby Type</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>null</td>
+      <td>NilClass</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>boolean</td>
+      <td>TrueClass/FalseClass</td>
+      <td>The strings 't' and 'f' will work as inputs too</td>
+    </tr>
+    <tr>
+      <td>text</td>
+      <td>String</td>
+      <td>The encoding specified on the connection is used</td>
+    </tr>
+    <tr>
+      <td>char</td>
+      <td>String</td>
+      <td>The encoding specified on the connection is used</td>
+    </tr>
+    <tr>
+      <td>varchar/character varying</td>
+      <td>String</td>
+      <td>The encoding specified on the connection is used</td>
+    </tr>
+    <tr>
+      <td>bytea</td>
+      <td>String</td>
+      <td>The output encoding is set to ASCII-8BIT/BINARY</td>
+    </tr>
+    <tr>
+      <td>integer</td>
+      <td>Fixnum</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>int2</td>
+      <td>Fixnum</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>int4</td>
+      <td>Fixnum</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>int8</td>
+      <td>Fixnum</td>
+      <td>Ruby may use a Bignum, if needed</td>
+    </tr>
+    <tr>
+      <td>float/real</td>
+      <td>Float</td>
+      <td>NaN, Infinity and -Infinity are supported</td>
+    </tr>
+    <tr>
+      <td>float4</td>
+      <td>Float</td>
+      <td>NaN, Infinity and -Infinity are supported</td>
+    </tr>
+    <tr>
+      <td>float8</td>
+      <td>Float</td>
+      <td>NaN, Infinity and -Infinity are supported</td>
+    </tr>
+    <tr>
+      <td>numeric/decimal</td>
+      <td>BigDecimal</td>
+      <td>NaN is supported</td>
+    </tr>
+    <tr>
+      <td>date</td>
+      <td>Date</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>timestamp</td>
+      <td>DateTime</td>
+      <td>Input may also be a Time; output times are in the system time zone</td>
+    </tr>
+    <tr>
+      <td>timestamptz/timestamp with time zone</td>
+      <td>DateTime</td>
+      <td>Input may also be a Time</td>
+    </tr>
+  </tbody>
+</table>
 
 All **n-dimensional Arrays** of the above listed **are supported**. Support
 for custom-typed Arrays is coming.
 
-### Bind parameters support
+### PostgreSQL style bind parameters
 
 PostgreSQL uses $1, $2 etc for bind parameters. RDO uses '?'. You can use
 either, but you **cannot** mix both styles in the same query, or you will
@@ -105,8 +172,7 @@ custom types, such as ENUMs (this is done by reading from pg_type, in an
 efficient manner).
 
 When sending pull requests, please use topic branches—don't send a pull
-request from the master branch of your fork, as that may change
-unintentionally.
+request from the master branch of your fork.
 
 Contributors will be credited in this README.
 
