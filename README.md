@@ -63,17 +63,7 @@ currently mapped types are tabled below:
       <td>The strings 't' and 'f' will work as inputs too</td>
     </tr>
     <tr>
-      <th>text</th>
-      <td>String</td>
-      <td>The encoding specified on the connection is used</td>
-    </tr>
-    <tr>
-      <th>char</th>
-      <td>String</td>
-      <td>The encoding specified on the connection is used</td>
-    </tr>
-    <tr>
-      <th>character varying</th>
+      <th>text, char, varchar</th>
       <td>String</td>
       <td>The encoding specified on the connection is used</td>
     </tr>
