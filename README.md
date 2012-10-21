@@ -112,11 +112,13 @@ currently mapped types are tabled below:
       <td>DateTime</td>
       <td>Input may also be a Time</td>
     </tr>
+    <tr>
+      <th>array</th>
+      <td>Array</td>
+      <td>n-dimensional arrays of the types listed above are supported</td>
+    </tr>
   </tbody>
 </table>
-
-All **n-dimensional Arrays** of the above listed **are supported**. Support
-for custom-typed Arrays is coming.
 
 ### PostgreSQL style bind parameters
 
