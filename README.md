@@ -53,52 +53,52 @@ currently mapped types are tabled below:
   </thead>
   <tbody>
     <tr>
-      <td>null</td>
+      <th>null</th>
       <td>NilClass</td>
       <td></td>
     </tr>
     <tr>
-      <td>boolean</td>
+      <th>boolean</th>
       <td>TrueClass/FalseClass</td>
       <td>The strings 't' and 'f' will work as inputs too</td>
     </tr>
     <tr>
-      <td>text</td>
+      <th>text</th>
       <td>String</td>
       <td>The encoding specified on the connection is used</td>
     </tr>
     <tr>
-      <td>char</td>
+      <th>char</th>
       <td>String</td>
       <td>The encoding specified on the connection is used</td>
     </tr>
     <tr>
-      <td>varchar/character varying</td>
+      <th>varchar/character varying</th>
       <td>String</td>
       <td>The encoding specified on the connection is used</td>
     </tr>
     <tr>
-      <td>bytea</td>
+      <th>bytea</th>
       <td>String</td>
       <td>The output encoding is set to ASCII-8BIT/BINARY</td>
     </tr>
     <tr>
-      <td>integer</td>
+      <th>integer</th>
       <td>Fixnum</td>
       <td></td>
     </tr>
     <tr>
-      <td>int2</td>
+      <th>int2</th>
       <td>Fixnum</td>
       <td></td>
     </tr>
     <tr>
-      <td>int4</td>
+      <th>int4</th>
       <td>Fixnum</td>
       <td></td>
     </tr>
     <tr>
-      <td>int8</td>
+      <th>int8</th>
       <td>Fixnum</td>
       <td>Ruby may use a Bignum, if needed</td>
     </tr>
@@ -108,32 +108,32 @@ currently mapped types are tabled below:
       <td>NaN, Infinity and -Infinity are supported</td>
     </tr>
     <tr>
-      <td>float4</td>
+      <th>float4</th>
       <td>Float</td>
       <td>NaN, Infinity and -Infinity are supported</td>
     </tr>
     <tr>
-      <td>float8</td>
+      <th>float8</th>
       <td>Float</td>
       <td>NaN, Infinity and -Infinity are supported</td>
     </tr>
     <tr>
-      <td>numeric/decimal</td>
+      <th>numeric/decimal</th>
       <td>BigDecimal</td>
       <td>NaN is supported</td>
     </tr>
     <tr>
-      <td>date</td>
+      <th>date</th>
       <td>Date</td>
       <td></td>
     </tr>
     <tr>
-      <td>timestamp</td>
+      <th>timestamp</th>
       <td>DateTime</td>
       <td>Input may also be a Time; output times are in the system time zone</td>
     </tr>
     <tr>
-      <td>timestamptz/timestamp with time zone</td>
+      <th>timestamp with time zone</th>
       <td>DateTime</td>
       <td>Input may also be a Time</td>
     </tr>
