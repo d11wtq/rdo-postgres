@@ -73,7 +73,7 @@ currently mapped types are tabled below:
       <td>The encoding specified on the connection is used</td>
     </tr>
     <tr>
-      <th>varchar/character varying</th>
+      <th>character varying</th>
       <td>String</td>
       <td>The encoding specified on the connection is used</td>
     </tr>
@@ -83,42 +83,17 @@ currently mapped types are tabled below:
       <td>The output encoding is set to ASCII-8BIT/BINARY</td>
     </tr>
     <tr>
-      <th>integer</th>
-      <td>Fixnum</td>
-      <td></td>
-    </tr>
-    <tr>
-      <th>int2</th>
-      <td>Fixnum</td>
-      <td></td>
-    </tr>
-    <tr>
-      <th>int4</th>
-      <td>Fixnum</td>
-      <td></td>
-    </tr>
-    <tr>
-      <th>int8</th>
+      <th>integer, int4, int2, int8</th>
       <td>Fixnum</td>
       <td>Ruby may use a Bignum, if needed</td>
     </tr>
     <tr>
-      <th>float/real</th>
+      <th>float, real, float4, float8</th>
       <td>Float</td>
       <td>NaN, Infinity and -Infinity are supported</td>
     </tr>
     <tr>
-      <th>float4</th>
-      <td>Float</td>
-      <td>NaN, Infinity and -Infinity are supported</td>
-    </tr>
-    <tr>
-      <th>float8</th>
-      <td>Float</td>
-      <td>NaN, Infinity and -Infinity are supported</td>
-    </tr>
-    <tr>
-      <th>numeric/decimal</th>
+      <th>numeric, decimal</th>
       <td>BigDecimal</td>
       <td>NaN is supported</td>
     </tr>
