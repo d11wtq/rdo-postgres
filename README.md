@@ -103,7 +103,7 @@ currently mapped types are tabled below:
       <td>Ruby may use a Bignum, if needed</td>
     </tr>
     <tr>
-      <td>float/real</td>
+      <th>float/real</th>
       <td>Float</td>
       <td>NaN, Infinity and -Infinity are supported</td>
     </tr>
