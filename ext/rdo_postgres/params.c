@@ -78,6 +78,13 @@ char * rdo_postgres_params_inject_markers(char * stmt) {
         }
         break;
 
+      case '\\':
+        if (!instr && !inident && !inmlcmt && !inslcmt && *(s + 1) == '?')
+          ++s;
+
+        *b = *s;
+        break;
+
       case '"':
         if (!instr && !inmlcmt && !inslcmt) {
           inident = !inident;
@@ -92,7 +99,7 @@ char * rdo_postgres_params_inject_markers(char * stmt) {
           sprintf(b, "$%i", ++n);
           b += RDO_PG_MARKER_LEN(n) - 1;
         } else {
-          *b= *s;
+          *b = *s;
         }
         break;
 
