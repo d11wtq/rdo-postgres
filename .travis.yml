@@ -1,7 +1,7 @@
 language: ruby
 services: postgresql
 before_script:
-  - apt-cache search hstore | postgr
+  - apt-cache search hstore | grep postgr
   - sudo apt-get install postgresql-8.4-hstore-new -y
   - psql -c "CREATE USER rdo WITH PASSWORD 'rdo';" -U postgres
   - psql -c "CREATE DATABASE rdo WITH OWNER rdo;" -U postgres
