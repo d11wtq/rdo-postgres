@@ -954,6 +954,7 @@ describe RDO::Postgres::Driver, "bind parameter support" do
 
   describe "escaped bind markers" do
     let(:tuple) do
+      connection.execute("CREATE EXTENSION IF NOT EXISTS hstore")
       connection.execute(%q{SELECT 'a=>42,b=>7'::hstore \? ?}, "a").first
     end
 
