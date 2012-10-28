@@ -129,6 +129,16 @@ This is **not ok**:
 conn.execute("SELECT * FROM users WHERE banned = $1 AND created_at > ?", true, 1.week.ago)
 ```
 
+### HStore Operators
+
+Some of the hstore operators in PostgreSQL use the '?' character. If you need
+to use them, for now, you need to escape the '?' so RDO doesn't confuse them
+for bind markers. I'd like to remove this restriction.
+
+``` ruby
+conn.execute(%q{SELECT 'foo=>42,bar=>101'::hstore \? ?}, "foo")
+```
+
 ## Contributing
 
 If you find any bugs, please send a pull request if you think you can
