@@ -11,7 +11,7 @@
 #include <math.h>
 
 /** Get the strlen of the marker (e.g. $2) based on its index */
-#define RDO_PG_MARKER_LEN(n) (n >= 100 ? 4 : (n >= 10 ? 3 : 2))
+#define RDO_PG_MARKER_LEN(n) (n > 0 ? (int) floor(log10(n)) + 2 : 2)
 
 /**
  * Replace e.g. "SELECT ? WHERE ?" with "SELECT $1 WHERE $2".
@@ -22,7 +22,7 @@
  */
 char * rdo_postgres_params_inject_markers(char * stmt) {
   int    len     = strlen(stmt);
-  char * buf     = malloc(sizeof(char) * len ? (len * (floor(log(len)) + 2)) : 0);
+  char * buf     = malloc(sizeof(char) * len ? (len * (floor(log10(len)) + 2)) : 0);
   char * s       = stmt;
   char * b       = buf;
   int    n       = 0;
@@ -90,7 +90,7 @@ char * rdo_postgres_params_inject_markers(char * stmt) {
       case '?':
         if (!instr && !inident && !inmlcmt && !inslcmt) {
           sprintf(b, "$%i", ++n);
-          b += RDO_PG_MARKER_LEN(n -1) - 1;
+          b += RDO_PG_MARKER_LEN(n) - 1;
         } else {
           *b= *s;
         }
