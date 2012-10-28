@@ -1,7 +1,7 @@
 language: ruby
 services: postgresql
 before_script:
-  - sudo apt-get install postgresql-contrib -qq -y
+  - sudo apt-get install postgresql-hstore-new -y
   - psql -c "CREATE USER rdo WITH PASSWORD 'rdo';" -U postgres
   - psql -c "CREATE DATABASE rdo WITH OWNER rdo;" -U postgres
   - psql rdo -c "CREATE EXTENSION hstore;" -U postgres
